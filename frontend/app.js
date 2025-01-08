@@ -26,12 +26,12 @@ async function analyzeProduct() {
             return;
         }
         
-        const harmfulIngredientsHtml = data.harmful_ingredients.length > 0 
+        const harmfulIngredientsHtml = data.analysis.harmful_ingredients.length > 0 
             ? `
                 <h3>Harmful Ingredients Found:</h3>
                 <ul>
-                    ${data.harmful_ingredients.map(item => 
-                        `<li>${item.ingredient} (${item.category})</li>`
+                    ${data.analysis.harmful_ingredients.map(item => 
+                        `<li>${item.ingredient} (${item.category}) - ${item.reason}</li>`
                     ).join('')}
                 </ul>
             `
@@ -43,7 +43,14 @@ async function analyzeProduct() {
                 <p>${data.ingredients_text}</p>
             </div>
             <div class="analysis ${data.is_safe ? 'safe' : 'unsafe'}">
+                <h3>Safety Score: ${data.analysis.safety_score}/100</h3>
                 ${harmfulIngredientsHtml}
+                ${data.analysis.recommendations && data.analysis.recommendations.length > 0 ? `
+                    <h3>Recommendations:</h3>
+                    <ul>
+                        ${data.analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                ` : ''}
             </div>
         `;
     } catch (error) {
