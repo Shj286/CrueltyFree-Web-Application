@@ -9,31 +9,34 @@ import re
 app = Flask(__name__)
 CORS(app)
 
+# Explicitly set Tesseract path
+pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
+
 # Comment out model loading for now
 # model = tf.keras.models.load_model('model.h5')
 
-# Mac Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/bin/tesseract'  # For Mac
-
 def extract_ingredients_from_image(image):
     # Extract text from image using pytesseract
-    text = pytesseract.image_to_string(image)
-    
-    # Try to find the ingredients section
-    # Common patterns in ingredient lists
-    patterns = [
-        r"INGREDIENTS:?(.*?)(?:\.|$)",
-        r"CONTAINS:?(.*?)(?:\.|$)",
-        r"COMPOSITION:?(.*?)(?:\.|$)"
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-        if match:
-            return match.group(1).strip()
-    
-    # If no specific ingredients section found, return all text
-    return text.strip()
+    try:
+        text = pytesseract.image_to_string(image)
+        if not text.strip():
+            return "No text detected in image"
+        
+        # Try to find the ingredients section
+        patterns = [
+            r"INGREDIENTS:?(.*?)(?:\.|$)",
+            r"CONTAINS:?(.*?)(?:\.|$)",
+            r"COMPOSITION:?(.*?)(?:\.|$)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match:
+                return match.group(1).strip()
+        
+        return text.strip()
+    except Exception as e:
+        return f"Error in OCR: {str(e)}"
 
 def analyze_ingredients(ingredients_text):
     # List of common harmful ingredients
