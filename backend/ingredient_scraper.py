@@ -90,20 +90,20 @@ class IngredientAnalyzer:
         
         # Common variations and normalizations
         variations_map = {
-            'titanium_dioxide': ['titanium dioxide', 'titanium oxide', 'tio2', 'ci 77891', 'titania', 'titanium(iv) oxide', 'titanium white'],
-            'zinc_oxide': ['zinc oxide', 'zno', 'ci 77947', 'zinc white'],
-            'iron_oxide': ['iron oxide', 'ci 77491', 'ci 77492', 'ci 77499', 'iron(iii) oxide'],
-            'aluminum_compounds': ['aluminum', 'aluminium', 'al', 'aluminum chloride', 'aluminum oxide'],
-            'silica': ['silica', 'silicon dioxide', 'sio2', 'sand'],
-            'octinoxate': ['octinoxate', 'ethylhexyl methoxycinnamate', 'octyl methoxycinnamate', 'emc', 'omc'],
-            'polyethylene_glycols': ['peg', 'polyethylene glycol', 'polyoxyethylene', 'peg-10', 'peg-100'],
-            'siloxanes': ['cyclopentasiloxane', 'cyclomethicone', 'cyclotetrasiloxane', 'dimethicone', 'd4', 'd5', 'd6'],
-            'benzophenone': ['benzophenone-1', 'benzophenone-2', 'benzophenone-3', 'oxybenzone', 'sulisobenzone'],
-            'butylated_compounds': ['bha', 'bht', 'butylated hydroxyanisole', 'butylated hydroxytoluene'],
+            'titanium_dioxide': ['titanium dioxide', 'titanium oxide', 'tio2', 'ci 77891', 'titania'],
+            'zinc_oxide': ['zinc oxide', 'zno', 'ci 77947'],
+            'iron_oxide': ['iron oxide', 'ci 77491', 'ci 77492', 'ci 77499'],
+            'aluminum_compounds': ['aluminum chlorohydrate', 'aluminum zirconium', 'aluminum chloride', 'aluminum hydroxide'],
+            'silica': ['silicon dioxide', 'sio2'],
+            'octinoxate': ['ethylhexyl methoxycinnamate', 'octyl methoxycinnamate', 'emt', 'omc'],
+            'polyethylene_glycols': ['peg-', 'polyethylene glycol'],
+            'siloxanes': ['cyclopentasiloxane', 'cyclomethicone', 'cyclotetrasiloxane', 'dimethicone'],
+            'benzophenone': ['benzophenone-1', 'benzophenone-2', 'benzophenone-3', 'oxybenzone'],
+            'butylated_compounds': ['butylated hydroxyanisole', 'butylated hydroxytoluene'],
             'parabens': ['methylparaben', 'propylparaben', 'butylparaben', 'ethylparaben', 'isobutylparaben'],
-            'phthalates': ['dbp', 'dehp', 'dep', 'dmp', 'dibutyl phthalate', 'diethyl phthalate'],
-            'formaldehyde_releasers': ['dmdm hydantoin', 'imidazolidinyl urea', 'diazolidinyl urea', 'quaternium-15', 'bronopol'],
-            'synthetic_fragrances': ['fragrance', 'parfum', 'aroma', 'natural fragrance', 'denat alcohol']
+            'phthalates': ['dibutyl phthalate', 'diethyl phthalate'],
+            'formaldehyde_releasers': ['dmdm hydantoin', 'imidazolidinyl urea', 'diazolidinyl urea', 'quaternium-15'],
+            'synthetic_fragrances': ['fragrance', 'parfum', 'aroma', 'denat alcohol']
         }
         
         # First try exact matching
@@ -116,19 +116,24 @@ class IngredientAnalyzer:
         normalized_ingredient = re.sub(r'[^a-z0-9]', '', ingredient_lower)
         print(f"Normalized ingredient: {normalized_ingredient}")
         
-        # Check for variations and partial matches
+        # Check for variations and partial matches with stricter rules
         for harmful_name, info in self.harmful_ingredients.items():
             harmful_lower = harmful_name.lower()
             
             # Convert harmful_name to match database key format
             harmful_key = harmful_lower.replace(' ', '_')
             
-            # Check main name variations
+            # Check main name variations with exact matching
             variations = variations_map.get(harmful_key, [harmful_lower])
             for variation in variations:
                 variation_lower = variation.lower()
                 normalized_variation = re.sub(r'[^a-z0-9]', '', variation_lower)
-                if variation_lower in ingredient_lower or normalized_variation in normalized_ingredient:
+                
+                # Only match if it's an exact match or starts with the variation
+                # This prevents partial matching that could lead to false positives
+                if (variation_lower == ingredient_lower or 
+                    ingredient_lower.startswith(variation_lower) or 
+                    normalized_ingredient == normalized_variation):
                     print(f"Found variation match: {ingredient} -> {harmful_name} (via {variation})")
                     return {
                         'is_harmful': True,
@@ -139,40 +144,40 @@ class IngredientAnalyzer:
                         'found_in': info['found_in']
                     }
             
-            # Check alternative names
+            # Check alternative names with stricter matching
             for alt_name in info['alternative_names']:
                 alt_lower = alt_name.lower()
-                # Normalize alternative name
                 normalized_alt = re.sub(r'[^a-z0-9]', '', alt_lower)
                 
-                # Enhanced matching for PEG compounds
-                if 'peg' in ingredient_lower and 'polyethylene' in harmful_lower:
-                    print(f"Found PEG compound match: {ingredient} -> {harmful_name}")
-                    return {
-                        'is_harmful': True,
-                        'matched_name': harmful_name,
-                        'score': info['score'],
-                        'concerns': info['concerns'],
-                        'categories': info['categories'],
-                        'found_in': info['found_in']
-                    }
+                # Special case for PEG compounds
+                if harmful_key == 'polyethylene_glycols':
+                    if ingredient_lower.startswith('peg-') or 'polyethylene glycol' in ingredient_lower:
+                        print(f"Found PEG compound match: {ingredient} -> {harmful_name}")
+                        return {
+                            'is_harmful': True,
+                            'matched_name': harmful_name,
+                            'score': info['score'],
+                            'concerns': info['concerns'],
+                            'categories': info['categories'],
+                            'found_in': info['found_in']
+                        }
                 
-                # Enhanced matching for siloxanes/silicones
-                if ('siloxane' in ingredient_lower or 'silicone' in ingredient_lower) and 'siloxane' in harmful_lower:
-                    print(f"Found siloxane/silicone match: {ingredient} -> {harmful_name}")
-                    return {
-                        'is_harmful': True,
-                        'matched_name': harmful_name,
-                        'score': info['score'],
-                        'concerns': info['concerns'],
-                        'categories': info['categories'],
-                        'found_in': info['found_in']
-                    }
+                # Special case for siloxanes/silicones with strict matching
+                if harmful_key == 'siloxanes':
+                    if any(term in ingredient_lower for term in ['siloxane', 'cyclomethicone', 'dimethicone']):
+                        print(f"Found siloxane match: {ingredient} -> {harmful_name}")
+                        return {
+                            'is_harmful': True,
+                            'matched_name': harmful_name,
+                            'score': info['score'],
+                            'concerns': info['concerns'],
+                            'categories': info['categories'],
+                            'found_in': info['found_in']
+                        }
                 
-                # Check for exact match, contains match, and normalized match
+                # Exact match or starts with for alternative names
                 if (alt_lower == ingredient_lower or 
-                    alt_lower in ingredient_lower or 
-                    normalized_alt in normalized_ingredient):
+                    ingredient_lower.startswith(alt_lower)):
                     print(f"Found alternative name match: {ingredient} -> {harmful_name} (via {alt_name})")
                     return {
                         'is_harmful': True,
@@ -183,10 +188,11 @@ class IngredientAnalyzer:
                         'found_in': info['found_in']
                     }
                 
-                # Check for compound ingredients (e.g., "titanium" + "dioxide")
+                # Check for compound ingredients (e.g., "titanium dioxide") with exact word matching
                 if ' ' in alt_lower:
                     parts = alt_lower.split()
-                    if all(part in ingredient_lower for part in parts):
+                    if (ingredient_lower == alt_lower or
+                        (len(parts) > 1 and all(f" {part} " in f" {ingredient_lower} " for part in parts))):
                         print(f"Found compound match: {ingredient} -> {harmful_name} (via {alt_name})")
                         return {
                             'is_harmful': True,
