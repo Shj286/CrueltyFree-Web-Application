@@ -3,35 +3,199 @@
 <head>
     <title>CrueltyFree Product Analyzer</title>
     <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <div class="container">
-        <h1>CrueltyFree Product Analyzer</h1>
-        <div class="input-section">
-            <input type="file" id="productImage" accept="image/*">
-            <button onclick="analyzeProduct()">Analyze Product</button>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <span>CrueltyFree</span>
+            </div>
+            <div class="nav-links">
+                <a href="#about" class="nav-link">About</a>
+                <a href="#analyze" class="nav-link">Analyze</a>
+                <a href="#database" class="nav-link">Database</a>
+            </div>
         </div>
-        <div id="loading" style="display: none;">
-            Analyzing product ingredients...
+    </nav>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <h1>Analyze Your Products</h1>
+            <p class="subtitle">Check your cosmetics and personal care products for harmful ingredients</p>
+        </section>
+
+        <section id="analyze" class="analyze-section">
+            <div class="container">
+                <div class="upload-container">
+                    <div class="upload-box" id="uploadBox">
+                        <input type="file" id="productImage" accept="image/*" class="file-input">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop your image here or click to browse</p>
+                            <small>Supports: JPG, PNG, GIF (Max size: 5MB)</small>
+                        </div>
+                    </div>
+                    <button onclick="analyzeProduct()" class="analyze-btn">
+                        <i class="fas fa-search"></i> Analyze Ingredients
+                    </button>
+                </div>
+
+                <div id="loading" class="loading-container">
+                    <div class="spinner"></div>
+                    <p>Analyzing product ingredients...</p>
+                </div>
+
+                <div id="results" class="results-container"></div>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-camera"></i>
+                        <h3>Upload Image</h3>
+                        <p>Take a photo or upload an image of your product's ingredient list</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-microscope"></i>
+                        <h3>Analyze Ingredients</h3>
+                        <p>Our system scans and analyzes each ingredient for potential harmful effects</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Get Results</h3>
+                        <p>Receive detailed safety information and alternative recommendations</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="database" class="database-section">
+            <div class="container">
+                <h2>Our Database</h2>
+                <p>We maintain a comprehensive database of ingredients, including:</p>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <i class="fas fa-database"></i>
+                        <h3>1000+</h3>
+                        <p>Ingredients</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>200+</h3>
+                        <p>Harmful Substances</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-leaf"></i>
+                        <h3>500+</h3>
+                        <p>Safe Alternatives</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>CrueltyFree</h3>
+                    <p>Making product safety information accessible to everyone</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <a href="#about">About</a>
+                    <a href="#analyze">Analyze</a>
+                    <a href="#database">Database</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <div class="social-links">
+                        <a href="https://github.com/Shj286" target="_blank" class="social-link">
+                            <i class="fab fa-github"></i>
+                            <span class="tooltip">GitHub</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/sjangra" target="_blank" class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                            <span class="tooltip">LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 CrueltyFree. All rights reserved.</p>
+            </div>
         </div>
-        <div id="results"></div>
-    </div>
+    </footer>
 
     <script>
         const BACKEND_URL = 'http://localhost:5001';
+        
+        // Add drag and drop functionality
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('productImage');
 
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadBox.classList.add('highlight');
+        }
+
+        function unhighlight(e) {
+            uploadBox.classList.remove('highlight');
+        }
+
+        uploadBox.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+        }
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Original analyze function with enhanced UI updates
         async function analyzeProduct() {
             const fileInput = document.getElementById('productImage');
             const resultDiv = document.getElementById('results');
             const loadingDiv = document.getElementById('loading');
 
             if (!fileInput.files[0]) {
-                alert('Please select an image first');
+                showNotification('Please select an image first', 'error');
                 return;
             }
 
             try {
-                loadingDiv.style.display = 'block';
+                loadingDiv.style.display = 'flex';
                 resultDiv.innerHTML = '';
 
                 const formData = new FormData();
@@ -48,14 +212,35 @@
 
                 const data = await response.json();
                 displayResults(data);
+                showNotification('Analysis complete!', 'success');
             } catch (error) {
                 console.error('Error:', error);
                 resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                showNotification('An error occurred during analysis', 'error');
             } finally {
                 loadingDiv.style.display = 'none';
             }
         }
 
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Enhanced results display
         function displayResults(data) {
             const resultDiv = document.getElementById('results');
             
@@ -65,52 +250,84 @@
             }
 
             let html = `
-                <div class="results-container">
+                <div class="results-content">
                     <h2>Analysis Results</h2>
                     
-                    <h3 class="section-title">Extracted Text</h3>
-                    <div class="ocr-section">
-                        <h4>Identified Ingredients:</h4>
+                    <div class="ingredients-section">
+                        <h3>Identified Ingredients</h3>
                         <div class="ingredients-list">
                             ${data.ingredients_found.map(ingredient => {
                                 const isHarmful = data.analysis_results.harmful_details.some(
                                     h => h.ingredient.toLowerCase() === ingredient.toLowerCase()
                                 );
-                                return `<span class="ingredient-item ${isHarmful ? 'harmful' : 'safe'}">${ingredient}</span>`;
+                                return `<span class="ingredient-item ${isHarmful ? 'harmful' : 'safe'}">
+                                    ${isHarmful ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>'}
+                                    ${ingredient}
+                                </span>`;
                             }).join('')}
                         </div>
                     </div>
 
-                    <div class="safety-score ${data.analysis_results.safety_level.level.toLowerCase().replace(' ', '-')}">
-                        <h3>Safety Score: ${data.analysis_results.safety_score}</h3>
-                        <p>${data.analysis_results.safety_level.level}: ${data.analysis_results.safety_level.description}</p>
-                    </div>
+                    <div class="safety-section">
+                        <div class="safety-score ${data.analysis_results.safety_level.level.toLowerCase().replace(' ', '-')}">
+                            <div class="score-circle">
+                                <span class="score-number">${data.analysis_results.safety_score}</span>
+                                <span class="score-label">Safety Score</span>
+                            </div>
+                            <div class="score-details">
+                                <h4>${data.analysis_results.safety_level.level}</h4>
+                                <p>${data.analysis_results.safety_level.description}</p>
+                            </div>
+                        </div>
 
-                    <div class="ingredients-summary">
-                        <p>Total Ingredients: ${data.analysis_results.total_ingredients}</p>
-                        <p>Harmful Ingredients Found: ${data.analysis_results.harmful_ingredients_found}</p>
+                        <div class="ingredients-summary">
+                            <div class="summary-item">
+                                <i class="fas fa-flask"></i>
+                                <span>Total Ingredients: ${data.analysis_results.total_ingredients}</span>
+                            </div>
+                            <div class="summary-item">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Harmful Ingredients: ${data.analysis_results.harmful_ingredients_found}</span>
+                            </div>
+                        </div>
                     </div>`;
 
             if (data.analysis_results.harmful_details.length > 0) {
                 html += `
                     <div class="harmful-ingredients">
-                        <h3>Harmful Ingredients Found:</h3>
-                        <ul>`;
+                        <h3>Harmful Ingredients Found</h3>
+                        <div class="harmful-grid">`;
                 
                 data.analysis_results.harmful_details.forEach(ingredient => {
                     html += `
-                        <li class="harmful">
-                            <strong>${ingredient.ingredient}</strong> (Hazard Score: ${ingredient.score})
-                            <p>Concerns: ${ingredient.concerns.join(', ')}</p>
-                            <p>Found in: ${ingredient.found_in.join(', ')}</p>
-                        </li>`;
+                        <div class="harmful-card">
+                            <div class="card-header">
+                                <h4>${ingredient.ingredient}</h4>
+                                <span class="hazard-score">Hazard Score: ${ingredient.score}</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="concerns">
+                                    <h5><i class="fas fa-exclamation-circle"></i> Concerns:</h5>
+                                    <ul>
+                                        ${ingredient.concerns.map(concern => `<li>${concern}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div class="found-in">
+                                    <h5><i class="fas fa-search"></i> Found in:</h5>
+                                    <p>${ingredient.found_in.join(', ')}</p>
+                                </div>
+                            </div>
+                        </div>`;
                 });
                 
-                html += `</ul></div>`;
+                html += `</div></div>`;
             }
 
             html += `</div>`;
             resultDiv.innerHTML = html;
+
+            // Scroll to results
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // Check connection when page loads
@@ -122,11 +339,9 @@
                 }
             } catch (error) {
                 console.error('Failed to connect to backend:', error);
-                document.getElementById('results').innerHTML = `
-                    <p class="error">Failed to connect to backend server. Please make sure the server is running on port 5000.</p>
-                `;
+                showNotification('Failed to connect to server. Please try again later.', 'error');
             }
         });
     </script>
 </body>
-</html> 
+</html>
