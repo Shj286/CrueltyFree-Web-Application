@@ -1,0 +1,9 @@
+flask==2.3.3
+flask-cors==4.0.0
+pillow==10.0.0
+pytesseract==0.3.10
+numpy==1.24.3
+requests==2.31.0
+beautifulsoup4==4.12.2
+schedule==1.2.0
+lxml==4.9.3 
