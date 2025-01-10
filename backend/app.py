@@ -119,6 +119,28 @@ def clean_ingredient_text(text):
     print(f"Found {len(ingredients)} unique ingredients: {ingredients}")  # Debug log
     return ingredients
 
+def validate_ingredients_image(text):
+    """Validate if the image likely contains ingredient text."""
+    # Common ingredient list indicators
+    indicators = [
+        'ingredients', 'contains', 'composition', 'ingr', 
+        'aqua', 'water', 'glycerin', 'parfum', 'ingredient'
+    ]
+    
+    text_lower = text.lower()
+    
+    # Check if text contains any ingredient indicators
+    has_indicators = any(indicator in text_lower for indicator in indicators)
+    
+    # Check if text has typical ingredient list patterns
+    has_separators = ',' in text or ';' in text or '•' in text
+    
+    # Check minimum length and word count
+    words = text.split()
+    has_minimum_content = len(words) >= 3 and len(text) >= 20
+    
+    return has_indicators and has_separators and has_minimum_content
+
 def extract_text_from_image(image_file):
     """Enhanced text extraction with improved accuracy."""
     try:
@@ -153,8 +175,14 @@ def extract_text_from_image(image_file):
         # Clean up
         os.unlink(temp_path)
         
-        # Combine and clean results
+        # Combine results
         combined_text = ' '.join(texts)
+        
+        # Validate if the image contains ingredient text
+        if not validate_ingredients_image(combined_text):
+            raise ValueError("The uploaded image doesn't appear to be an ingredients list. Please upload a clear image of product ingredients.")
+        
+        # Clean and extract ingredients
         ingredients = clean_ingredient_text(combined_text)
         
         if not ingredients:
@@ -181,13 +209,16 @@ def analyze_ingredients():
             
         # Validate file type
         if not image_file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            return jsonify({'error': 'Invalid file type. Please upload a PNG or JPEG image'}), 400
+            return jsonify({'error': 'Invalid file type. Please upload a PNG or JPEG image of product ingredients'}), 400
 
         # Extract ingredients from image
         try:
             ingredients = extract_text_from_image(image_file)
         except ValueError as e:
-            return jsonify({'error': str(e)}), 400
+            return jsonify({
+                'error': str(e),
+                'help': 'Please ensure you are uploading a clear image of product ingredients, not a general product photo or other image type.'
+            }), 400
 
         # Load toxic database
         toxic_db = load_toxic_database()

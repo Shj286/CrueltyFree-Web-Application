@@ -35,7 +35,7 @@ async function analyzeProduct() {
     const loadingDiv = document.getElementById('loading');
     
     if (!fileInput.files[0]) {
-        alert('Please select an image first');
+        showNotification('Please select an image of product ingredients', 'error');
         return;
     }
     
@@ -43,13 +43,13 @@ async function analyzeProduct() {
     const file = fileInput.files[0];
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
-        alert('Please upload a valid image file (JPEG, PNG)');
+        showNotification('Please upload a valid image file (JPEG, PNG) of product ingredients', 'error');
         return;
     }
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB');
+        showNotification('Image size should be less than 5MB', 'error');
         return;
     }
     
@@ -153,15 +153,20 @@ async function analyzeProduct() {
             <div class="error-message">
                 <h3>⚠️ Error</h3>
                 <p>${error.message}</p>
-                <p>Troubleshooting steps:</p>
-                <ul>
-                    <li>Check if the server is running (http://localhost:5001)</li>
-                    <li>Try refreshing the page</li>
-                    <li>Ensure your image is clear and readable</li>
-                    <li>Try again in a few moments</li>
-                </ul>
+                <div class="error-help">
+                    <h4>Image Requirements:</h4>
+                    <ul>
+                        <li>Must be a clear image of product ingredients list</li>
+                        <li>Text should be clearly readable</li>
+                        <li>Avoid general product photos or other image types</li>
+                        <li>Supported formats: JPG, PNG</li>
+                        <li>Maximum size: 5MB</li>
+                    </ul>
+                    <p>Example of a good image: A clear, close-up photo of the ingredients list on the product packaging.</p>
+                </div>
             </div>
         `;
+        showNotification('Failed to analyze ingredients. Please check image requirements.', 'error');
     } finally {
         loadingDiv.style.display = 'none';
     }
