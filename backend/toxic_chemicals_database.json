@@ -2,206 +2,713 @@
     "harmful_ingredients": {
         "aluminum compounds": {
             "score": 7,
-            "categories": ["neurotoxin", "bioaccumulative"],
-            "concerns": ["Nervous system effects", "Accumulates in body", "Linked to breast cancer"],
-            "found_in": ["antiperspirants", "deodorants", "sunscreens"],
-            "alternative_names": ["aluminum chlorohydrate", "aluminum zirconium", "aluminum chloride", "aluminum hydroxide"]
+            "categories": [
+                "neurotoxin",
+                "bioaccumulative"
+            ],
+            "concerns": [
+                "Nervous system effects",
+                "Accumulates in body",
+                "Linked to breast cancer"
+            ],
+            "found_in": [
+                "antiperspirants",
+                "deodorants",
+                "sunscreens"
+            ],
+            "alternative_names": [
+                "aluminum chlorohydrate",
+                "aluminum zirconium",
+                "aluminum chloride",
+                "aluminum hydroxide"
+            ]
         },
         "benzophenone": {
             "score": 8,
-            "categories": ["endocrine_disruptor", "carcinogen"],
-            "concerns": ["Hormone disruption", "Cancer risk", "Skin allergies"],
-            "found_in": ["sunscreens", "fragrances", "nail polish"],
-            "alternative_names": ["benzophenone-1", "benzophenone-2", "benzophenone-3", "oxybenzone", "sulisobenzone"]
+            "categories": [
+                "endocrine_disruptor",
+                "carcinogen"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Cancer risk",
+                "Skin allergies"
+            ],
+            "found_in": [
+                "sunscreens",
+                "fragrances",
+                "nail polish"
+            ],
+            "alternative_names": [
+                "benzophenone-1",
+                "benzophenone-2",
+                "benzophenone-3",
+                "oxybenzone",
+                "sulisobenzone"
+            ]
         },
         "butylated compounds": {
             "score": 7,
-            "categories": ["carcinogen", "organ_toxin"],
-            "concerns": ["Cancer risk", "Organ system toxicity", "Endocrine disruption"],
-            "found_in": ["moisturizers", "lipsticks", "sunscreens"],
-            "alternative_names": ["BHA", "BHT", "butylated hydroxyanisole", "butylated hydroxytoluene"]
+            "categories": [
+                "carcinogen",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Organ system toxicity",
+                "Endocrine disruption"
+            ],
+            "found_in": [
+                "moisturizers",
+                "lipsticks",
+                "sunscreens"
+            ],
+            "alternative_names": [
+                "BHA",
+                "BHT",
+                "butylated hydroxyanisole",
+                "butylated hydroxytoluene"
+            ]
         },
         "carbon black": {
             "score": 7,
-            "categories": ["carcinogen", "respiratory_toxin"],
-            "concerns": ["Cancer risk", "Lung damage", "Organ toxicity"],
-            "found_in": ["mascara", "eyeliner", "nail polish"],
-            "alternative_names": ["CI 77266", "D&C Black No. 2", "channel black", "furnace black"]
+            "categories": [
+                "carcinogen",
+                "respiratory_toxin"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Lung damage",
+                "Organ toxicity"
+            ],
+            "found_in": [
+                "mascara",
+                "eyeliner",
+                "nail polish"
+            ],
+            "alternative_names": [
+                "CI 77266",
+                "D&C Black No. 2",
+                "channel black",
+                "furnace black"
+            ]
         },
         "ethanolamines": {
             "score": 6,
-            "categories": ["allergen", "organ_toxin"],
-            "concerns": ["Skin irritation", "Organ toxicity", "Forms nitrosamines"],
-            "found_in": ["shampoos", "soaps", "hair dyes"],
-            "alternative_names": ["DEA", "MEA", "TEA", "diethanolamine", "monoethanolamine", "triethanolamine"]
+            "categories": [
+                "allergen",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Skin irritation",
+                "Organ toxicity",
+                "Forms nitrosamines"
+            ],
+            "found_in": [
+                "shampoos",
+                "soaps",
+                "hair dyes"
+            ],
+            "alternative_names": [
+                "DEA",
+                "MEA",
+                "TEA",
+                "diethanolamine",
+                "monoethanolamine",
+                "triethanolamine"
+            ]
         },
         "formaldehyde releasers": {
             "score": 9,
-            "categories": ["carcinogen", "allergen"],
-            "concerns": ["Cancer risk", "Skin allergies", "Respiratory issues"],
-            "found_in": ["shampoos", "body washes", "nail polish"],
-            "alternative_names": ["DMDM hydantoin", "imidazolidinyl urea", "diazolidinyl urea", "quaternium-15", "bronopol"]
+            "categories": [
+                "carcinogen",
+                "allergen"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Skin allergies",
+                "Respiratory issues"
+            ],
+            "found_in": [
+                "shampoos",
+                "body washes",
+                "nail polish"
+            ],
+            "alternative_names": [
+                "DMDM hydantoin",
+                "imidazolidinyl urea",
+                "diazolidinyl urea",
+                "quaternium-15",
+                "bronopol"
+            ]
         },
         "hydroquinone": {
             "score": 8,
-            "categories": ["carcinogen", "skin_penetrator"],
-            "concerns": ["Cancer risk", "Skin irritation", "Organ toxicity"],
-            "found_in": ["skin lighteners", "facial moisturizers", "hair dyes"],
-            "alternative_names": ["1,4-benzenediol", "1,4-dihydroxybenzene", "quinol"]
+            "categories": [
+                "carcinogen",
+                "skin_penetrator"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Skin irritation",
+                "Organ toxicity"
+            ],
+            "found_in": [
+                "skin lighteners",
+                "facial moisturizers",
+                "hair dyes"
+            ],
+            "alternative_names": [
+                "1,4-benzenediol",
+                "1,4-dihydroxybenzene",
+                "quinol"
+            ]
         },
         "methylisothiazolinone": {
             "score": 7,
-            "categories": ["allergen", "neurotoxin"],
-            "concerns": ["Skin allergies", "Nerve damage", "Immune system toxicity"],
-            "found_in": ["shampoos", "conditioners", "body washes"],
-            "alternative_names": ["MI", "MIT", "2-methyl-4-isothiazolin-3-one"]
+            "categories": [
+                "allergen",
+                "neurotoxin"
+            ],
+            "concerns": [
+                "Skin allergies",
+                "Nerve damage",
+                "Immune system toxicity"
+            ],
+            "found_in": [
+                "shampoos",
+                "conditioners",
+                "body washes"
+            ],
+            "alternative_names": [
+                "MI",
+                "MIT",
+                "2-methyl-4-isothiazolin-3-one"
+            ]
         },
         "mineral oil": {
             "score": 4,
-            "categories": ["organ_toxin", "bioaccumulative"],
-            "concerns": ["Organ toxicity", "Bioaccumulation", "Contamination concerns"],
-            "found_in": ["moisturizers", "baby oil", "lip products"],
-            "alternative_names": ["paraffin oil", "liquid paraffin", "white mineral oil", "liquid petroleum"]
+            "categories": [
+                "organ_toxin",
+                "bioaccumulative"
+            ],
+            "concerns": [
+                "Organ toxicity",
+                "Bioaccumulation",
+                "Contamination concerns"
+            ],
+            "found_in": [
+                "moisturizers",
+                "baby oil",
+                "lip products"
+            ],
+            "alternative_names": [
+                "paraffin oil",
+                "liquid paraffin",
+                "white mineral oil",
+                "liquid petroleum"
+            ]
         },
         "nanoparticles": {
             "score": 6,
-            "categories": ["respiratory_toxin", "organ_toxin"],
-            "concerns": ["Lung damage", "Organ toxicity", "Cell damage"],
-            "found_in": ["sunscreens", "anti-aging products", "makeup"],
-            "alternative_names": ["nano zinc oxide", "nano titanium dioxide", "fullerenes", "nano silver"]
+            "categories": [
+                "respiratory_toxin",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Lung damage",
+                "Organ toxicity",
+                "Cell damage"
+            ],
+            "found_in": [
+                "sunscreens",
+                "anti-aging products",
+                "makeup"
+            ],
+            "alternative_names": [
+                "nano zinc oxide",
+                "nano titanium dioxide",
+                "fullerenes",
+                "nano silver"
+            ]
         },
         "nitrosamines": {
             "score": 9,
-            "categories": ["carcinogen", "developmental_toxin"],
-            "concerns": ["Cancer risk", "Birth defects", "Organ toxicity"],
-            "found_in": ["shampoos", "body washes", "mascara"],
-            "alternative_names": ["NDEA", "NDMA", "nitrosodiethanolamine", "nitrosomethylethylamine"]
+            "categories": [
+                "carcinogen",
+                "developmental_toxin"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Birth defects",
+                "Organ toxicity"
+            ],
+            "found_in": [
+                "shampoos",
+                "body washes",
+                "mascara"
+            ],
+            "alternative_names": [
+                "NDEA",
+                "NDMA",
+                "nitrosodiethanolamine",
+                "nitrosomethylethylamine"
+            ]
         },
         "octinoxate": {
             "score": 7,
-            "categories": ["endocrine_disruptor", "environmental_toxin"],
-            "concerns": ["Hormone disruption", "Coral reef damage", "Skin allergies"],
-            "found_in": ["sunscreens", "moisturizers", "lip balms"],
-            "alternative_names": ["ethylhexyl methoxycinnamate", "octyl methoxycinnamate", "EMC", "OMC"]
+            "categories": [
+                "endocrine_disruptor",
+                "environmental_toxin"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Coral reef damage",
+                "Skin allergies"
+            ],
+            "found_in": [
+                "sunscreens",
+                "moisturizers",
+                "lip balms"
+            ],
+            "alternative_names": [
+                "ethylhexyl methoxycinnamate",
+                "octyl methoxycinnamate",
+                "EMC",
+                "OMC"
+            ]
         },
         "parabens": {
             "score": 7,
-            "categories": ["endocrine_disruptor", "carcinogen"],
-            "concerns": ["Hormone disruption", "Breast cancer risk", "Reproductive toxicity"],
-            "found_in": ["moisturizers", "shampoos", "deodorants"],
-            "alternative_names": ["methylparaben", "propylparaben", "butylparaben", "ethylparaben", "isobutylparaben"]
+            "categories": [
+                "endocrine_disruptor",
+                "carcinogen"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Breast cancer risk",
+                "Reproductive toxicity"
+            ],
+            "found_in": [
+                "moisturizers",
+                "shampoos",
+                "deodorants"
+            ],
+            "alternative_names": [
+                "methylparaben",
+                "propylparaben",
+                "butylparaben",
+                "ethylparaben",
+                "isobutylparaben"
+            ]
         },
         "petrolatum": {
             "score": 4,
-            "categories": ["organ_toxin", "bioaccumulative"],
-            "concerns": ["Contamination concerns", "Organ toxicity", "Environmental concerns"],
-            "found_in": ["lip balms", "moisturizers", "hair products"],
-            "alternative_names": ["petroleum jelly", "mineral oil jelly", "soft paraffin", "liquid paraffin"]
+            "categories": [
+                "organ_toxin",
+                "bioaccumulative"
+            ],
+            "concerns": [
+                "Contamination concerns",
+                "Organ toxicity",
+                "Environmental concerns"
+            ],
+            "found_in": [
+                "lip balms",
+                "moisturizers",
+                "hair products"
+            ],
+            "alternative_names": [
+                "petroleum jelly",
+                "mineral oil jelly",
+                "soft paraffin",
+                "liquid paraffin"
+            ]
         },
         "phthalates": {
             "score": 8,
-            "categories": ["endocrine_disruptor", "developmental_toxin"],
-            "concerns": ["Reproductive toxicity", "Birth defects", "Hormone disruption"],
-            "found_in": ["fragrances", "nail polish", "hair sprays"],
-            "alternative_names": ["DBP", "DEHP", "DEP", "DMP", "dibutyl phthalate", "diethyl phthalate"]
+            "categories": [
+                "endocrine_disruptor",
+                "developmental_toxin"
+            ],
+            "concerns": [
+                "Reproductive toxicity",
+                "Birth defects",
+                "Hormone disruption"
+            ],
+            "found_in": [
+                "fragrances",
+                "nail polish",
+                "hair sprays"
+            ],
+            "alternative_names": [
+                "DBP",
+                "DEHP",
+                "DEP",
+                "DMP",
+                "dibutyl phthalate",
+                "diethyl phthalate"
+            ]
         },
         "polyethylene glycols": {
             "score": 5,
-            "categories": ["skin_penetrator", "organ_toxin"],
-            "concerns": ["Enhanced absorption of toxins", "Organ toxicity", "Contamination concerns"],
-            "found_in": ["creams", "sunscreens", "shampoos"],
-            "alternative_names": ["PEG", "polyethylene oxide", "polyoxyethylene", "PEG-100"]
+            "categories": [
+                "skin_penetrator",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Enhanced absorption of toxins",
+                "Organ toxicity",
+                "Contamination concerns"
+            ],
+            "found_in": [
+                "creams",
+                "sunscreens",
+                "shampoos"
+            ],
+            "alternative_names": [
+                "PEG",
+                "polyethylene oxide",
+                "polyoxyethylene",
+                "PEG-100"
+            ]
         },
         "resorcinol": {
             "score": 7,
-            "categories": ["endocrine_disruptor", "allergen"],
-            "concerns": ["Hormone disruption", "Skin irritation", "Organ toxicity"],
-            "found_in": ["hair dyes", "acne treatments", "peels"],
-            "alternative_names": ["1,3-benzenediol", "m-hydroxybenzene", "resorcin"]
+            "categories": [
+                "endocrine_disruptor",
+                "allergen"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Skin irritation",
+                "Organ toxicity"
+            ],
+            "found_in": [
+                "hair dyes",
+                "acne treatments",
+                "peels"
+            ],
+            "alternative_names": [
+                "1,3-benzenediol",
+                "m-hydroxybenzene",
+                "resorcin"
+            ]
         },
         "retinyl palmitate": {
             "score": 6,
-            "categories": ["developmental_toxin", "photosensitizer"],
-            "concerns": ["Sun sensitivity", "Reproductive toxicity", "Skin damage"],
-            "found_in": ["anti-aging products", "moisturizers", "lip products"],
-            "alternative_names": ["vitamin A palmitate", "retinol palmitate", "all-trans-retinyl palmitate"]
+            "categories": [
+                "developmental_toxin",
+                "photosensitizer"
+            ],
+            "concerns": [
+                "Sun sensitivity",
+                "Reproductive toxicity",
+                "Skin damage"
+            ],
+            "found_in": [
+                "anti-aging products",
+                "moisturizers",
+                "lip products"
+            ],
+            "alternative_names": [
+                "vitamin A palmitate",
+                "retinol palmitate",
+                "all-trans-retinyl palmitate"
+            ]
         },
         "siloxanes": {
             "score": 6,
-            "categories": ["endocrine_disruptor", "environmental_toxin"],
-            "concerns": ["Hormone disruption", "Environmental persistence", "Reproductive toxicity"],
-            "found_in": ["hair products", "deodorants", "moisturizers"],
-            "alternative_names": ["cyclomethicone", "cyclopentasiloxane", "cyclotetrasiloxane", "D4", "D5", "D6"]
+            "categories": [
+                "endocrine_disruptor",
+                "environmental_toxin"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Environmental persistence",
+                "Reproductive toxicity"
+            ],
+            "found_in": [
+                "hair products",
+                "deodorants",
+                "moisturizers"
+            ],
+            "alternative_names": [
+                "cyclomethicone",
+                "cyclopentasiloxane",
+                "cyclotetrasiloxane",
+                "D4",
+                "D5",
+                "D6"
+            ]
         },
         "sodium lauryl sulfate": {
             "score": 5,
-            "categories": ["irritant", "organ_toxin"],
-            "concerns": ["Skin irritation", "Eye damage", "Organ system toxicity"],
-            "found_in": ["shampoos", "body washes", "toothpaste"],
-            "alternative_names": ["SLS", "sodium dodecyl sulfate", "lauryl sodium sulfate", "sodium laurilsulfate"]
+            "categories": [
+                "irritant",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Skin irritation",
+                "Eye damage",
+                "Organ system toxicity"
+            ],
+            "found_in": [
+                "shampoos",
+                "body washes",
+                "toothpaste"
+            ],
+            "alternative_names": [
+                "SLS",
+                "sodium dodecyl sulfate",
+                "lauryl sodium sulfate",
+                "sodium laurilsulfate"
+            ]
         },
         "synthetic colors": {
             "score": 7,
-            "categories": ["carcinogen", "allergen"],
-            "concerns": ["Cancer risk", "Skin irritation", "Hyperactivity"],
-            "found_in": ["makeup", "hair dyes", "skincare"],
-            "alternative_names": ["FD&C", "D&C", "CI", "Blue 1", "Red 40", "Yellow 5", "Green 3"]
+            "categories": [
+                "carcinogen",
+                "allergen"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Skin irritation",
+                "Hyperactivity"
+            ],
+            "found_in": [
+                "makeup",
+                "hair dyes",
+                "skincare"
+            ],
+            "alternative_names": [
+                "FD&C",
+                "D&C",
+                "CI",
+                "Blue 1",
+                "Red 40",
+                "Yellow 5",
+                "Green 3"
+            ]
         },
         "synthetic fragrances": {
             "score": 8,
-            "categories": ["allergen", "endocrine_disruptor"],
-            "concerns": ["Allergies", "Hormone disruption", "Respiratory issues"],
-            "found_in": ["perfumes", "skincare", "hair products"],
-            "alternative_names": ["fragrance", "parfum", "aroma", "natural fragrance"]
+            "categories": [
+                "allergen",
+                "endocrine_disruptor"
+            ],
+            "concerns": [
+                "Allergies",
+                "Hormone disruption",
+                "Respiratory issues"
+            ],
+            "found_in": [
+                "perfumes",
+                "skincare",
+                "hair products"
+            ],
+            "alternative_names": [
+                "fragrance",
+                "parfum",
+                "aroma",
+                "natural fragrance"
+            ]
         },
         "talc": {
             "score": 7,
-            "categories": ["carcinogen", "respiratory_toxin"],
-            "concerns": ["Cancer risk", "Respiratory issues", "Asbestos contamination"],
-            "found_in": ["baby powder", "makeup", "deodorants"],
-            "alternative_names": ["talcum", "talcum powder", "magnesium silicate"]
+            "categories": [
+                "carcinogen",
+                "respiratory_toxin"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Respiratory issues",
+                "Asbestos contamination"
+            ],
+            "found_in": [
+                "baby powder",
+                "makeup",
+                "deodorants"
+            ],
+            "alternative_names": [
+                "talcum",
+                "talcum powder",
+                "magnesium silicate"
+            ]
         },
         "toluene": {
             "score": 8,
-            "categories": ["developmental_toxin", "neurotoxin"],
-            "concerns": ["Birth defects", "Nervous system damage", "Respiratory toxicity"],
-            "found_in": ["nail polish", "hair dyes", "adhesives"],
-            "alternative_names": ["methylbenzene", "phenylmethane", "toluol"]
+            "categories": [
+                "developmental_toxin",
+                "neurotoxin"
+            ],
+            "concerns": [
+                "Birth defects",
+                "Nervous system damage",
+                "Respiratory toxicity"
+            ],
+            "found_in": [
+                "nail polish",
+                "hair dyes",
+                "adhesives"
+            ],
+            "alternative_names": [
+                "methylbenzene",
+                "phenylmethane",
+                "toluol"
+            ]
         },
         "triclosan": {
             "score": 8,
-            "categories": ["endocrine_disruptor", "environmental_toxin"],
-            "concerns": ["Hormone disruption", "Antibacterial resistance"],
-            "found_in": ["antibacterial soaps", "toothpaste", "deodorants"],
-            "alternative_names": ["5-chloro-2-(2,4-dichlorophenoxy)phenol"]
+            "categories": [
+                "endocrine_disruptor",
+                "environmental_toxin"
+            ],
+            "concerns": [
+                "Hormone disruption",
+                "Antibacterial resistance"
+            ],
+            "found_in": [
+                "antibacterial soaps",
+                "toothpaste",
+                "deodorants"
+            ],
+            "alternative_names": [
+                "5-chloro-2-(2,4-dichlorophenoxy)phenol"
+            ]
         },
         "titanium_dioxide": {
             "score": 7,
-            "categories": ["carcinogen", "respiratory_toxin"],
-            "concerns": ["Possible carcinogen when inhaled", "Respiratory inflammation", "Oxidative stress"],
-            "found_in": ["sunscreens", "cosmetics", "food coloring", "paint"],
-            "alternative_names": ["TiO2", "CI 77891", "E171"]
+            "categories": [
+                "carcinogen",
+                "respiratory_toxin"
+            ],
+            "concerns": [
+                "Possible carcinogen when inhaled",
+                "Respiratory inflammation",
+                "Oxidative stress"
+            ],
+            "found_in": [
+                "sunscreens",
+                "cosmetics",
+                "food coloring",
+                "paint"
+            ],
+            "alternative_names": [
+                "TiO2",
+                "CI 77891",
+                "E171"
+            ]
         },
         "formaldehyde": {
             "score": 9,
-            "categories": ["carcinogen", "respiratory_toxin", "allergen"],
-            "concerns": ["Cancer risk", "Respiratory irritation", "Skin sensitization"],
-            "found_in": ["building materials", "pressed wood products", "personal care products"],
-            "alternative_names": ["formalin", "methanal", "methylene oxide"]
+            "categories": [
+                "carcinogen",
+                "respiratory_toxin",
+                "allergen"
+            ],
+            "concerns": [
+                "Cancer risk",
+                "Respiratory irritation",
+                "Skin sensitization"
+            ],
+            "found_in": [
+                "building materials",
+                "pressed wood products",
+                "personal care products"
+            ],
+            "alternative_names": [
+                "formalin",
+                "methanal",
+                "methylene oxide"
+            ]
         },
         "cadmium": {
             "score": 9,
-            "categories": ["carcinogen", "organ_toxin", "bioaccumulative"],
-            "concerns": ["Kidney damage", "Bone damage", "Cancer risk"],
-            "found_in": ["batteries", "metal coatings", "contaminated soil"],
-            "alternative_names": ["Cd", "cadmium compounds"]
+            "categories": [
+                "carcinogen",
+                "organ_toxin",
+                "bioaccumulative"
+            ],
+            "concerns": [
+                "Kidney damage",
+                "Bone damage",
+                "Cancer risk"
+            ],
+            "found_in": [
+                "batteries",
+                "metal coatings",
+                "contaminated soil"
+            ],
+            "alternative_names": [
+                "Cd",
+                "cadmium compounds"
+            ]
         },
         "benzene": {
             "score": 9,
-            "categories": ["carcinogen", "organ_toxin"],
-            "concerns": ["Leukemia risk", "Blood disorders", "Immune system damage"],
-            "found_in": ["gasoline", "industrial solvents", "plastics manufacturing"],
-            "alternative_names": ["benzol", "coal naphtha", "phenyl hydride"]
+            "categories": [
+                "carcinogen",
+                "organ_toxin"
+            ],
+            "concerns": [
+                "Leukemia risk",
+                "Blood disorders",
+                "Immune system damage"
+            ],
+            "found_in": [
+                "gasoline",
+                "industrial solvents",
+                "plastics manufacturing"
+            ],
+            "alternative_names": [
+                "benzol",
+                "coal naphtha",
+                "phenyl hydride"
+            ]
+        }
+    },
+    "safe_alternatives": {
+        "parabens": {
+            "alternatives": [
+                "grapefruit seed extract",
+                "vitamin E",
+                "potassium sorbate",
+                "sodium benzoate"
+            ],
+            "explanation": "Natural preservatives that are gentler on the skin and body"
+        },
+        "phthalates": {
+            "alternatives": [
+                "essential oils",
+                "natural fragrances",
+                "phthalate-free synthetic fragrances"
+            ],
+            "explanation": "Natural scent alternatives that don't disrupt hormones"
+        },
+        "triclosan": {
+            "alternatives": [
+                "tea tree oil",
+                "thyme oil",
+                "oregano oil"
+            ],
+            "explanation": "Natural antibacterial ingredients that don't promote resistance"
+        },
+        "pfas": {
+            "alternatives": [
+                "stainless steel cookware",
+                "cast iron",
+                "ceramic cookware"
+            ],
+            "explanation": "Traditional cookware materials that don't contain harmful chemicals"
+        },
+        "bpa": {
+            "alternatives": [
+                "glass containers",
+                "stainless steel",
+                "BPA-free plastics"
+            ],
+            "explanation": "Safe materials for food storage and packaging"
         }
     },
     "toxicity_categories": {
@@ -221,27 +728,5 @@
         "eye_toxin": "Can damage eyes",
         "hormone_disruptor": "Interferes with hormones",
         "microbiome_disruptor": "Disrupts skin microbiome"
-    },
-    "safe_alternatives": {
-        "parabens": {
-            "alternatives": ["grapefruit seed extract", "vitamin E", "potassium sorbate", "sodium benzoate"],
-            "explanation": "Natural preservatives that are gentler on the skin and body"
-        },
-        "phthalates": {
-            "alternatives": ["essential oils", "natural fragrances", "phthalate-free synthetic fragrances"],
-            "explanation": "Natural scent alternatives that don't disrupt hormones"
-        },
-        "triclosan": {
-            "alternatives": ["tea tree oil", "thyme oil", "oregano oil"],
-            "explanation": "Natural antibacterial ingredients that don't promote resistance"
-        },
-        "pfas": {
-            "alternatives": ["stainless steel cookware", "cast iron", "ceramic cookware"],
-            "explanation": "Traditional cookware materials that don't contain harmful chemicals"
-        },
-        "bpa": {
-            "alternatives": ["glass containers", "stainless steel", "BPA-free plastics"],
-            "explanation": "Safe materials for food storage and packaging"
-        }
     }
 }

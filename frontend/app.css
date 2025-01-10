@@ -99,6 +99,157 @@ body {
     margin: 0 auto;
 }
 
+/* Dashboard Section */
+.dashboard-section {
+    padding: 60px 0;
+    background-color: var(--background-light);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform var(--transition-speed);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.card-header h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.card-content {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.dashboard-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-container h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.recent-analyses {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.recent-analyses h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.analyses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.analysis-item {
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    transition: background-color var(--transition-speed);
+}
+
+.analysis-item:hover {
+    background-color: var(--background-light);
+}
+
+.analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.timestamp {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.safety-score {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.safety-score.safe {
+    background-color: var(--success-light);
+    color: var(--success-color);
+}
+
+.safety-score.harmful {
+    background-color: var(--danger-light);
+    color: var(--danger-color);
+}
+
+.analysis-content {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .dashboard-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        min-height: 300px;
+    }
+}
+
 /* Upload Section */
 .analyze-section {
     padding: 60px 0;
@@ -222,21 +373,79 @@ body {
 }
 
 .ingredient-item {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.ingredient-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
 }
 
-.ingredient-item i {
-    font-size: 0.8rem;
+.ingredient-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.hazard-score {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.ingredient-details {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+}
+
+.concerns, .alternatives {
+    margin-bottom: 1rem;
+}
+
+.concerns h4, .alternatives h4 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.concerns ul, .alternatives ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.concerns li, .alternatives li {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.concerns li:before {
+    content: "•";
+    color: var(--danger-color);
+    position: absolute;
+    left: 0;
+}
+
+.alternatives li:before {
+    content: "→";
+    color: var(--success-color);
+    position: absolute;
+    left: 0;
 }
 
 .harmful {
     background-color: var(--danger-light);
     border: 1px solid var(--danger-color);
+}
+
+.harmful .ingredient-name {
     color: var(--danger-color);
 }
 
@@ -530,4 +739,60 @@ body {
     .social-links {
         justify-content: center;
     }
+}
+
+.error-message {
+    background-color: var(--danger-light);
+    border: 1px solid var(--danger-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
+.error-message i {
+    font-size: 3rem;
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+.error-message h3 {
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+.error-message p {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.error-help {
+    text-align: left;
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+}
+
+.error-help h4 {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.error-help ul {
+    list-style: none;
+    padding: 0;
+}
+
+.error-help li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.error-help li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--danger-color);
 }

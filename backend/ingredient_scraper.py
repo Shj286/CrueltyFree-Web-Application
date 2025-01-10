@@ -1,13 +1,20 @@
 import json
 import re
+from difflib import SequenceMatcher
+import os
 
 class IngredientAnalyzer:
     def __init__(self):
         self.load_database()
 
     def load_database(self):
-        database_path = '/Users/shubham/CrueltyFree/backend/toxic_chemicals_database.json'
         try:
+            # Get the absolute path to the database file
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            database_path = os.path.join(current_dir, 'toxic_chemicals_database.json')
+            
+            print(f"Loading database from: {database_path}")
+            
             with open(database_path, 'r') as f:
                 data = json.load(f)
                 self.harmful_ingredients = data.get('harmful_ingredients', {})
@@ -85,124 +92,34 @@ class IngredientAnalyzer:
         }
 
     def _check_ingredient(self, ingredient):
+        """Enhanced ingredient checking with improved matching accuracy."""
         ingredient_lower = ingredient.lower().strip()
         print(f"\nChecking ingredient: {ingredient}")
         
-        # Common variations and normalizations
-        variations_map = {
-            'titanium_dioxide': ['titanium dioxide', 'titanium oxide', 'tio2', 'ci 77891', 'titania'],
-            'zinc_oxide': ['zinc oxide', 'zno', 'ci 77947'],
-            'iron_oxide': ['iron oxide', 'ci 77491', 'ci 77492', 'ci 77499'],
-            'aluminum_compounds': ['aluminum chlorohydrate', 'aluminum zirconium', 'aluminum chloride', 'aluminum hydroxide'],
-            'silica': ['silicon dioxide', 'sio2'],
-            'octinoxate': ['ethylhexyl methoxycinnamate', 'octyl methoxycinnamate', 'emt', 'omc'],
-            'polyethylene_glycols': ['peg-', 'polyethylene glycol'],
-            'siloxanes': ['cyclopentasiloxane', 'cyclomethicone', 'cyclotetrasiloxane', 'dimethicone'],
-            'benzophenone': ['benzophenone-1', 'benzophenone-2', 'benzophenone-3', 'oxybenzone'],
-            'butylated_compounds': ['butylated hydroxyanisole', 'butylated hydroxytoluene'],
-            'parabens': ['methylparaben', 'propylparaben', 'butylparaben', 'ethylparaben', 'isobutylparaben'],
-            'phthalates': ['dibutyl phthalate', 'diethyl phthalate'],
-            'formaldehyde_releasers': ['dmdm hydantoin', 'imidazolidinyl urea', 'diazolidinyl urea', 'quaternium-15'],
-            'synthetic_fragrances': ['fragrance', 'parfum', 'aroma', 'denat alcohol']
-        }
+        # Step 1: Normalize the ingredient name
+        normalized = self._normalize_ingredient_name(ingredient_lower)
+        print(f"Normalized form: {normalized}")
         
-        # First try exact matching
-        match = self._exact_match(ingredient_lower)
-        if match['is_harmful']:
-            print(f"Found exact match: {ingredient} -> {match['matched_name']}")
-            return match
+        # Step 2: Check exact matches first (including alternative names)
+        exact_match = self._check_exact_matches(normalized, ingredient_lower)
+        if exact_match:
+            return exact_match
         
-        # Normalize the ingredient name by removing spaces and special characters
-        normalized_ingredient = re.sub(r'[^a-z0-9]', '', ingredient_lower)
-        print(f"Normalized ingredient: {normalized_ingredient}")
+        # Step 3: Check for chemical variations and derivatives
+        chemical_match = self._check_chemical_variations(normalized, ingredient_lower)
+        if chemical_match:
+            return chemical_match
         
-        # Check for variations and partial matches with stricter rules
-        for harmful_name, info in self.harmful_ingredients.items():
-            harmful_lower = harmful_name.lower()
+        # Step 4: Check for compound matches
+        compound_match = self._check_compound_ingredient(normalized, ingredient_lower)
+        if compound_match:
+            return compound_match
+        
+        # Step 5: Check for partial matches with high confidence
+        partial_match = self._check_partial_matches(normalized, ingredient_lower)
+        if partial_match:
+            return partial_match
             
-            # Convert harmful_name to match database key format
-            harmful_key = harmful_lower.replace(' ', '_')
-            
-            # Check main name variations with exact matching
-            variations = variations_map.get(harmful_key, [harmful_lower])
-            for variation in variations:
-                variation_lower = variation.lower()
-                normalized_variation = re.sub(r'[^a-z0-9]', '', variation_lower)
-                
-                # Only match if it's an exact match or starts with the variation
-                # This prevents partial matching that could lead to false positives
-                if (variation_lower == ingredient_lower or 
-                    ingredient_lower.startswith(variation_lower) or 
-                    normalized_ingredient == normalized_variation):
-                    print(f"Found variation match: {ingredient} -> {harmful_name} (via {variation})")
-                    return {
-                        'is_harmful': True,
-                        'matched_name': harmful_name,
-                        'score': info['score'],
-                        'concerns': info['concerns'],
-                        'categories': info['categories'],
-                        'found_in': info['found_in']
-                    }
-            
-            # Check alternative names with stricter matching
-            for alt_name in info['alternative_names']:
-                alt_lower = alt_name.lower()
-                normalized_alt = re.sub(r'[^a-z0-9]', '', alt_lower)
-                
-                # Special case for PEG compounds
-                if harmful_key == 'polyethylene_glycols':
-                    if ingredient_lower.startswith('peg-') or 'polyethylene glycol' in ingredient_lower:
-                        print(f"Found PEG compound match: {ingredient} -> {harmful_name}")
-                        return {
-                            'is_harmful': True,
-                            'matched_name': harmful_name,
-                            'score': info['score'],
-                            'concerns': info['concerns'],
-                            'categories': info['categories'],
-                            'found_in': info['found_in']
-                        }
-                
-                # Special case for siloxanes/silicones with strict matching
-                if harmful_key == 'siloxanes':
-                    if any(term in ingredient_lower for term in ['siloxane', 'cyclomethicone', 'dimethicone']):
-                        print(f"Found siloxane match: {ingredient} -> {harmful_name}")
-                        return {
-                            'is_harmful': True,
-                            'matched_name': harmful_name,
-                            'score': info['score'],
-                            'concerns': info['concerns'],
-                            'categories': info['categories'],
-                            'found_in': info['found_in']
-                        }
-                
-                # Exact match or starts with for alternative names
-                if (alt_lower == ingredient_lower or 
-                    ingredient_lower.startswith(alt_lower)):
-                    print(f"Found alternative name match: {ingredient} -> {harmful_name} (via {alt_name})")
-                    return {
-                        'is_harmful': True,
-                        'matched_name': harmful_name,
-                        'score': info['score'],
-                        'concerns': info['concerns'],
-                        'categories': info['categories'],
-                        'found_in': info['found_in']
-                    }
-                
-                # Check for compound ingredients (e.g., "titanium dioxide") with exact word matching
-                if ' ' in alt_lower:
-                    parts = alt_lower.split()
-                    if (ingredient_lower == alt_lower or
-                        (len(parts) > 1 and all(f" {part} " in f" {ingredient_lower} " for part in parts))):
-                        print(f"Found compound match: {ingredient} -> {harmful_name} (via {alt_name})")
-                        return {
-                            'is_harmful': True,
-                            'matched_name': harmful_name,
-                            'score': info['score'],
-                            'concerns': info['concerns'],
-                            'categories': info['categories'],
-                            'found_in': info['found_in']
-                        }
-        
         print(f"No harmful match found for: {ingredient}")
         return {
             'is_harmful': False,
@@ -213,56 +130,247 @@ class IngredientAnalyzer:
             'found_in': []
         }
 
-    def _exact_match(self, ingredient):
-        if ingredient in self.harmful_ingredients:
-            info = self.harmful_ingredients[ingredient]
-            return {
-                'is_harmful': True,
-                'matched_name': ingredient,
-                'score': info['score'],
-                'concerns': info['concerns'],
-                'categories': info['categories'],
-                'found_in': info['found_in']
-            }
-        return {'is_harmful': False}
+    def _normalize_ingredient_name(self, name):
+        """Enhanced ingredient name normalization."""
+        # Remove common prefixes/suffixes
+        name = re.sub(r'^(and|or|contains|with|derived from|from)\s+', '', name)
+        
+        # Remove parentheses and their contents (but keep chemical info)
+        name = re.sub(r'\([^)]*?(color|colour|ci|no\.|grade)\s*[^)]*\)', '', name, flags=re.IGNORECASE)
+        
+        # Remove numbers but keep chemical numbers
+        name = re.sub(r'(?<!\b[A-Za-z])\d+(?!\b[A-Za-z])', '', name)
+        
+        # Convert to lowercase and remove special characters but keep hyphens and dots
+        name = re.sub(r'[^a-z0-9\-\.]', '', name.lower())
+        
+        # Remove common chemical suffixes but keep important ones
+        name = re.sub(r'(acid|ester|salt|oxide|hydroxide|sulfate|acetate)$', '', name)
+        
+        # Remove common filler words
+        name = re.sub(r'\b(powder|extract|oil|solution|derivative|compound|certified|organic|natural)\b', '', name)
+        
+        return name.strip()
 
-    def _partial_match(self, ingredient):
-        min_length = 4  # Minimum length to consider for partial matching
+    def _check_exact_matches(self, normalized, original):
+        """Check for exact matches including alternative names."""
         for harmful_name, info in self.harmful_ingredients.items():
-            if len(harmful_name) >= min_length and harmful_name in ingredient:
-                return {
-                    'is_harmful': True,
-                    'matched_name': harmful_name,
-                    'score': info['score'],
-                    'concerns': info['concerns'],
-                    'categories': info['categories'],
-                    'found_in': info['found_in']
-                }
-            for alt_name in info['alternative_names']:
-                if len(alt_name) >= min_length and alt_name.lower() in ingredient:
-                    return {
-                        'is_harmful': True,
-                        'matched_name': harmful_name,
-                        'score': info['score'],
-                        'concerns': info['concerns'],
-                        'categories': info['categories'],
-                        'found_in': info['found_in']
-                    }
-        return {'is_harmful': False}
+            harmful_normalized = self._normalize_ingredient_name(harmful_name)
+            
+            # Direct match check
+            if normalized == harmful_normalized:
+                print(f"Found exact match: {original} -> {harmful_name}")
+                return self._create_harmful_result(harmful_name, info)
+            
+            # Check alternative names
+            for alt_name in info.get('alternative_names', []):
+                alt_normalized = self._normalize_ingredient_name(alt_name)
+                if normalized == alt_normalized:
+                    print(f"Found alternative name match: {original} -> {harmful_name}")
+                    return self._create_harmful_result(harmful_name, info)
+        return None
 
-    def _word_boundary_match(self, ingredient):
-        words = ingredient.split()
+    def _check_chemical_variations(self, normalized, original):
+        """Enhanced chemical variation checking."""
+        chemical_patterns = {
+            r'methyl': ['paraben', 'siloxane', 'isothiazolinone', 'ether', 'ester'],
+            r'ethyl': ['paraben', 'phthalate', 'silicate', 'ether', 'ester'],
+            r'propyl': ['paraben', 'phthalate', 'alcohol', 'ester'],
+            r'butyl': ['paraben', 'phthalate', 'alcohol', 'ester'],
+            r'benzyl': ['alcohol', 'salicylate', 'benzoate', 'paraben'],
+            r'phenyl': ['acetate', 'salicylate', 'mercuric', 'paraben'],
+            r'sodium': ['lauryl', 'laureth', 'benzoate', 'chloride'],
+            r'potassium': ['sorbate', 'benzoate', 'chloride'],
+            r'calcium': ['carbonate', 'phosphate', 'chloride'],
+            r'zinc': ['oxide', 'pyrithione', 'stearate'],
+            r'titanium': ['dioxide', 'oxide'],
+            r'aluminum': ['chloride', 'hydroxide', 'oxide', 'stearate']
+        }
+        
+        for prefix, suffixes in chemical_patterns.items():
+            if prefix in normalized:
+                for suffix in suffixes:
+                    if suffix in normalized:
+                        # Search for matching harmful ingredients with higher accuracy
+                        for harmful_name, info in self.harmful_ingredients.items():
+                            harmful_lower = harmful_name.lower()
+                            if (prefix in harmful_lower and suffix in harmful_lower) or \
+                               any(prefix in alt.lower() and suffix in alt.lower() 
+                                   for alt in info.get('alternative_names', [])):
+                                confidence = self._calculate_chemical_match_confidence(
+                                    normalized, harmful_lower, prefix, suffix)
+                                if confidence >= 0.85:  # High confidence threshold
+                                    print(f"Found chemical variation match: {original} -> {harmful_name}")
+                                    return self._create_harmful_result(harmful_name, info)
+        return None
+
+    def _calculate_chemical_match_confidence(self, str1, str2, prefix, suffix):
+        """Calculate confidence score for chemical matches."""
+        # Base similarity
+        base_similarity = SequenceMatcher(None, str1, str2).ratio()
+        
+        # Position similarity (prefix and suffix should be in similar positions)
+        pos_similarity = 1.0
+        pos1_prefix = str1.find(prefix)
+        pos2_prefix = str2.find(prefix)
+        if abs(pos1_prefix - pos2_prefix) > 3:  # Allow small position differences
+            pos_similarity *= 0.8
+            
+        pos1_suffix = str1.find(suffix)
+        pos2_suffix = str2.find(suffix)
+        if abs(pos1_suffix - pos2_suffix) > 3:
+            pos_similarity *= 0.8
+        
+        # Length similarity
+        len_similarity = 1 - (abs(len(str1) - len(str2)) / max(len(str1), len(str2)))
+        
+        # Combined score with weights
+        confidence = (base_similarity * 0.4 + 
+                     pos_similarity * 0.4 + 
+                     len_similarity * 0.2)
+        
+        return confidence
+
+    def _check_compound_ingredient(self, normalized, original):
+        """Enhanced compound ingredient checking."""
+        # Check for compound ingredients with multiple parts
         for harmful_name, info in self.harmful_ingredients.items():
-            if harmful_name in words:
-                return {
-                    'is_harmful': True,
-                    'matched_name': harmful_name,
-                    'score': info['score'],
-                    'concerns': info['concerns'],
-                    'categories': info['categories'],
-                    'found_in': info['found_in']
-                }
-        return {'is_harmful': False}
+            harmful_parts = set(self._normalize_ingredient_name(harmful_name).split('-'))
+            
+            # Check if all parts of the harmful ingredient are in the normalized name
+            if len(harmful_parts) > 1 and all(part in normalized for part in harmful_parts):
+                print(f"Found compound match: {original} -> {harmful_name}")
+                return self._create_harmful_result(harmful_name, info)
+            
+            # Check compound alternative names
+            for alt_name in info.get('alternative_names', []):
+                alt_parts = set(self._normalize_ingredient_name(alt_name).split('-'))
+                if len(alt_parts) > 1 and all(part in normalized for part in alt_parts):
+                    print(f"Found compound alternative match: {original} -> {harmful_name}")
+                    return self._create_harmful_result(harmful_name, info)
+                
+            # Check for chemical family matches
+            if any(family in normalized for family in ['phthalate', 'paraben', 'siloxane', 'glycol']):
+                if any(family in harmful_name.lower() for family in ['phthalate', 'paraben', 'siloxane', 'glycol']):
+                    chemical_match_score = self._calculate_chemical_match_score(normalized, harmful_name)
+                    if chemical_match_score >= 0.8:  # High confidence threshold
+                        print(f"Found chemical family match: {original} -> {harmful_name}")
+                        return self._create_harmful_result(harmful_name, info)
+        
+        return None
+
+    def _check_partial_matches(self, normalized, original):
+        """Enhanced partial matching with improved accuracy."""
+        best_match = None
+        highest_confidence = 0.75  # Minimum confidence threshold
+        
+        for harmful_name, info in self.harmful_ingredients.items():
+            harmful_normalized = self._normalize_ingredient_name(harmful_name)
+            
+            # Calculate match confidence
+            confidence = self._calculate_match_confidence(normalized, harmful_normalized)
+            
+            if confidence > highest_confidence:
+                highest_confidence = confidence
+                best_match = (harmful_name, info)
+                
+            # Check alternative names
+            for alt_name in info.get('alternative_names', []):
+                alt_normalized = self._normalize_ingredient_name(alt_name)
+                confidence = self._calculate_match_confidence(normalized, alt_normalized)
+                
+                if confidence > highest_confidence:
+                    highest_confidence = confidence
+                    best_match = (harmful_name, info)
+        
+        if best_match:
+            print(f"Found partial match with {highest_confidence:.2f} confidence: {original} -> {best_match[0]}")
+            return self._create_harmful_result(best_match[0], best_match[1])
+            
+        return None
+
+    def _calculate_match_confidence(self, str1, str2):
+        """Calculate the confidence score for partial matches."""
+        # Length difference penalty
+        length_diff = abs(len(str1) - len(str2)) / max(len(str1), len(str2))
+        length_score = 1 - length_diff
+        
+        # Sequence matcher similarity
+        sequence_score = SequenceMatcher(None, str1, str2).ratio()
+        
+        # Common substring score
+        common_substrings = self._find_common_substrings(str1, str2)
+        substring_score = sum(len(s) for s in common_substrings) / max(len(str1), len(str2))
+        
+        # Chemical pattern score
+        chemical_score = self._calculate_chemical_match_score(str1, str2)
+        
+        # Weighted average of all scores
+        confidence = (
+            length_score * 0.2 +
+            sequence_score * 0.3 +
+            substring_score * 0.2 +
+            chemical_score * 0.3
+        )
+        
+        return confidence
+
+    def _calculate_chemical_match_score(self, str1, str2):
+        """Calculate similarity score based on chemical patterns."""
+        chemical_patterns = [
+            r'methyl', r'ethyl', r'propyl', r'butyl',
+            r'benzyl', r'phenyl', r'sodium', r'potassium',
+            r'calcium', r'zinc', r'aluminum', r'titanium',
+            r'oxide', r'chloride', r'sulfate', r'phosphate',
+            r'acetate', r'benzoate', r'salicylate', r'paraben',
+            r'phthalate', r'siloxane', r'glycol'
+        ]
+        
+        # Count matching patterns
+        matches = sum(1 for pattern in chemical_patterns 
+                     if re.search(pattern, str1) and re.search(pattern, str2))
+        
+        # Calculate score based on matches
+        if matches == 0:
+            return 0
+        return min(1.0, matches * 0.25)  # Cap at 1.0
+
+    def _find_common_substrings(self, str1, str2):
+        """Find all common substrings between two strings."""
+        common = []
+        len1, len2 = len(str1), len(str2)
+        
+        # Create a matrix of matches
+        matrix = [[0] * (len2 + 1) for _ in range(len1 + 1)]
+        longest = 0
+        
+        # Fill the matrix
+        for i in range(len1):
+            for j in range(len2):
+                if str1[i] == str2[j]:
+                    matrix[i + 1][j + 1] = matrix[i][j] + 1
+                    if matrix[i + 1][j + 1] > longest:
+                        longest = matrix[i + 1][j + 1]
+        
+        # Extract common substrings
+        for length in range(longest, 2, -1):  # Only consider substrings of length > 2
+            for i in range(len1 + 1):
+                for j in range(len2 + 1):
+                    if matrix[i][j] == length:
+                        common.append(str1[i - length:i])
+        
+        return common
+
+    def _create_harmful_result(self, harmful_name, info):
+        """Create a standardized harmful ingredient result."""
+        return {
+            'is_harmful': True,
+            'matched_name': harmful_name,
+            'score': info.get('score', 5),
+            'concerns': info.get('concerns', []),
+            'categories': info.get('categories', []),
+            'found_in': info.get('found_in', [])
+        }
 
     def _calculate_safety_score(self, harmful_ingredients, total_ingredients):
         if total_ingredients == 0:
@@ -384,3 +492,11 @@ class IngredientAnalyzer:
         
         print(f"Found {len(ingredients)} unique ingredients: {ingredients}")  # Debug log
         return ingredients 
+
+class EWGScraper:
+    def __init__(self):
+        self.ingredients_data = {}
+
+    def get_all_ingredients(self):
+        # TODO: Implement actual EWG scraping
+        return self.ingredients_data 

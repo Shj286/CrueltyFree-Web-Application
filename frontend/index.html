@@ -15,6 +15,7 @@
             </div>
             <div class="nav-links">
                 <a href="#about" class="nav-link">About</a>
+                <a href="#dashboard" class="nav-link">Dashboard</a>
                 <a href="#analyze" class="nav-link">Analyze</a>
                 <a href="#database" class="nav-link">Database</a>
             </div>
@@ -25,6 +26,64 @@
         <section id="hero" class="hero-section">
             <h1>Analyze Your Products</h1>
             <p class="subtitle">Check your cosmetics and personal care products for harmful ingredients</p>
+        </section>
+
+        <section id="dashboard" class="dashboard-section" style="display: none;">
+            <div class="container">
+                <h2>Analytics Dashboard</h2>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-flask"></i>
+                            <h3>Products Analyzed</h3>
+                        </div>
+                        <div class="card-content">
+                            <span class="stat-number" id="totalProducts">0</span>
+                            <span class="stat-label">Total Scans</span>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Harmful Ingredients</h3>
+                        </div>
+                        <div class="card-content">
+                            <span class="stat-number" id="harmfulCount">0</span>
+                            <span class="stat-label">Found Today</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>Average Safety</h3>
+                        </div>
+                        <div class="card-content">
+                            <span class="stat-number" id="avgSafety">0%</span>
+                            <span class="stat-label">Safety Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Common Harmful Ingredients</h3>
+                        <canvas id="ingredientsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Safety Score Distribution</h3>
+                        <canvas id="safetyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recent-analyses">
+                    <h3>Recent Analyses</h3>
+                    <div class="analyses-list" id="recentAnalyses">
+                        <!-- Recent analyses will be populated here -->
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section id="analyze" class="analyze-section">
@@ -133,6 +192,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const BACKEND_URL = 'http://localhost:5001';
         
@@ -198,6 +258,16 @@
                 loadingDiv.style.display = 'flex';
                 resultDiv.innerHTML = '';
 
+                // Check server health first
+                try {
+                    const healthCheck = await fetch(`${BACKEND_URL}/health`);
+                    if (!healthCheck.ok) {
+                        throw new Error('Server is not responding');
+                    }
+                } catch (error) {
+                    throw new Error('Failed to connect to server. Please ensure the server is running on port 5001');
+                }
+
                 const formData = new FormData();
                 formData.append('image', fileInput.files[0]);
 
@@ -207,15 +277,35 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
                 displayResults(data);
                 showNotification('Analysis complete!', 'success');
             } catch (error) {
                 console.error('Error:', error);
-                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                resultDiv.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                        <div class="error-help">
+                            <h4>Troubleshooting Steps:</h4>
+                            <ul>
+                                <li>Ensure the backend server is running on port 5001</li>
+                                <li>Check if the image is in a supported format (JPG, PNG)</li>
+                                <li>Try uploading a clearer image of the ingredients list</li>
+                                <li>Refresh the page and try again</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
                 showNotification('An error occurred during analysis', 'error');
             } finally {
                 loadingDiv.style.display = 'none';
@@ -243,91 +333,152 @@
         // Enhanced results display
         function displayResults(data) {
             const resultDiv = document.getElementById('results');
+            const dashboardSection = document.getElementById('dashboard');
             
             if (data.error) {
                 resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
                 return;
             }
 
-            let html = `
+            // Safely get ingredient counts
+            const safeIngredientsCount = Array.isArray(data.safe_ingredients) ? data.safe_ingredients.length : 0;
+            const harmfulIngredientsCount = Array.isArray(data.harmful_ingredients) ? data.harmful_ingredients.length : 0;
+            const totalIngredients = safeIngredientsCount + harmfulIngredientsCount;
+
+            // Calculate safety score only if there are ingredients
+            const safetyScore = totalIngredients > 0 
+                ? Math.round((safeIngredientsCount / totalIngredients) * 100)
+                : 0;
+            
+            // Show dashboard after successful analysis
+            dashboardSection.style.display = 'block';
+            
+            // Update dashboard stats
+            updateDashboardStats({
+                totalProducts: parseInt(document.getElementById('totalProducts').textContent) + 1,
+                harmfulCount: harmfulIngredientsCount,
+                avgSafety: safetyScore
+            });
+
+            // Add to recent analyses
+            addRecentAnalysis({
+                safetyScore: safetyScore,
+                harmfulIngredients: data.harmful_ingredients || []
+            });
+
+            // Update charts with new data
+            updateCharts({
+                harmfulIngredients: data.harmful_ingredients || [],
+                safetyScore: safetyScore
+            });
+
+            // Display detailed results
+            let resultsHTML = `
                 <div class="results-content">
                     <h2>Analysis Results</h2>
                     
-                    <div class="ingredients-section">
-                        <h3>Identified Ingredients</h3>
-                        <div class="ingredients-list">
-                            ${data.ingredients_found.map(ingredient => {
-                                const isHarmful = data.analysis_results.harmful_details.some(
-                                    h => h.ingredient.toLowerCase() === ingredient.toLowerCase()
-                                );
-                                return `<span class="ingredient-item ${isHarmful ? 'harmful' : 'safe'}">
-                                    ${isHarmful ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>'}
-                                    ${ingredient}
-                                </span>`;
-                            }).join('')}
+                    <div class="safety-score-section">
+                        <h3>Safety Score</h3>
+                        <div class="score-display ${safetyScore > 70 ? 'safe' : 'harmful'}">
+                            ${safetyScore}%
                         </div>
                     </div>
 
-                    <div class="safety-section">
-                        <div class="safety-score ${data.analysis_results.safety_level.level.toLowerCase().replace(' ', '-')}">
-                            <div class="score-circle">
-                                <span class="score-number">${data.analysis_results.safety_score}</span>
-                                <span class="score-label">Safety Score</span>
-                            </div>
-                            <div class="score-details">
-                                <h4>${data.analysis_results.safety_level.level}</h4>
-                                <p>${data.analysis_results.safety_level.description}</p>
-                            </div>
-                        </div>
-
-                        <div class="ingredients-summary">
-                            <div class="summary-item">
-                                <i class="fas fa-flask"></i>
-                                <span>Total Ingredients: ${data.analysis_results.total_ingredients}</span>
-                            </div>
-                            <div class="summary-item">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span>Harmful Ingredients: ${data.analysis_results.harmful_ingredients_found}</span>
-                            </div>
-                        </div>
-                    </div>`;
-
-            if (data.analysis_results.harmful_details.length > 0) {
-                html += `
-                    <div class="harmful-ingredients">
-                        <h3>Harmful Ingredients Found</h3>
-                        <div class="harmful-grid">`;
-                
-                data.analysis_results.harmful_details.forEach(ingredient => {
-                    html += `
-                        <div class="harmful-card">
-                            <div class="card-header">
-                                <h4>${ingredient.ingredient}</h4>
-                                <span class="hazard-score">Hazard Score: ${ingredient.score}</span>
-                            </div>
-                            <div class="card-content">
-                                <div class="concerns">
-                                    <h5><i class="fas fa-exclamation-circle"></i> Concerns:</h5>
-                                    <ul>
-                                        ${ingredient.concerns.map(concern => `<li>${concern}</li>`).join('')}
-                                    </ul>
+                    <div class="ingredients-section">
+                        <h3>Harmful Ingredients Found (${harmfulIngredientsCount})</h3>
+                        <div class="ingredients-list">
+                            ${data.detailed_harmful.map(ingredient => `
+                                <div class="ingredient-item harmful">
+                                    <div class="ingredient-header">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span class="ingredient-name">${ingredient.name}</span>
+                                        <span class="hazard-score">Hazard Score: ${ingredient.score}/10</span>
+                                    </div>
+                                    <div class="ingredient-details">
+                                        ${ingredient.concerns.length > 0 ? `
+                                            <div class="concerns">
+                                                <h4>Health Concerns:</h4>
+                                                <ul>
+                                                    ${ingredient.concerns.map(concern => `<li>${concern}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                        ` : ''}
+                                        ${ingredient.alternatives.length > 0 ? `
+                                            <div class="alternatives">
+                                                <h4>Safe Alternatives:</h4>
+                                                <ul>
+                                                    ${ingredient.alternatives.map(alt => `<li>${alt}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                        ` : ''}
+                                    </div>
                                 </div>
-                                <div class="found-in">
-                                    <h5><i class="fas fa-search"></i> Found in:</h5>
-                                    <p>${ingredient.found_in.join(', ')}</p>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="ingredients-section">
+                        <h3>Safe Ingredients (${safeIngredientsCount})</h3>
+                        <div class="ingredients-list">
+                            ${(data.safe_ingredients || []).map(ingredient => `
+                                <div class="ingredient-item safe">
+                                    <i class="fas fa-check-circle"></i>
+                                    ${ingredient}
                                 </div>
-                            </div>
-                        </div>`;
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = resultsHTML;
+
+            // Show dashboard after displaying results
+            dashboardSection.style.display = 'block';
+            
+            // Scroll to results first
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // After a short delay, scroll to dashboard
+            setTimeout(() => {
+                dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 2000);
+        }
+
+        // Update charts with new data
+        function updateCharts(data) {
+            // Update Common Harmful Ingredients Chart
+            const ingredientsChart = Chart.getChart('ingredientsChart');
+            if (ingredientsChart) {
+                const ingredientCounts = {};
+                data.harmfulIngredients.forEach(ingredient => {
+                    ingredientCounts[ingredient] = (ingredientCounts[ingredient] || 0) + 1;
                 });
-                
-                html += `</div></div>`;
+
+                const sortedIngredients = Object.entries(ingredientCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                ingredientsChart.data.labels = sortedIngredients.map(([ingredient]) => ingredient);
+                ingredientsChart.data.datasets[0].data = sortedIngredients.map(([, count]) => count);
+                ingredientsChart.update();
             }
 
-            html += `</div>`;
-            resultDiv.innerHTML = html;
-
-            // Scroll to results
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Update Safety Score Distribution Chart
+            const safetyChart = Chart.getChart('safetyChart');
+            if (safetyChart) {
+                const score = data.safetyScore;
+                let distribution;
+                if (score >= 70) {
+                    distribution = [score, 100 - score, 0];
+                } else if (score >= 40) {
+                    distribution = [0, score, 100 - score];
+                } else {
+                    distribution = [0, 0, score];
+                }
+                safetyChart.data.datasets[0].data = distribution;
+                safetyChart.update();
+            }
         }
 
         // Check connection when page loads
@@ -342,6 +493,84 @@
                 showNotification('Failed to connect to server. Please try again later.', 'error');
             }
         });
+
+        // Initialize charts
+        function initializeCharts() {
+            // Common Harmful Ingredients Chart
+            const ingredientsCtx = document.getElementById('ingredientsChart').getContext('2d');
+            new Chart(ingredientsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Titanium Dioxide', 'Parabens', 'Phthalates', 'Formaldehyde', 'SLS'],
+                    datasets: [{
+                        label: 'Frequency',
+                        data: [65, 59, 80, 81, 56],
+                        backgroundColor: 'rgba(76, 175, 80, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Safety Score Distribution Chart
+            const safetyCtx = document.getElementById('safetyChart').getContext('2d');
+            new Chart(safetyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Safe', 'Moderate', 'Harmful'],
+                    datasets: [{
+                        data: [60, 25, 15],
+                        backgroundColor: [
+                            'rgba(102, 187, 106, 0.8)',
+                            'rgba(249, 168, 37, 0.8)',
+                            'rgba(239, 83, 80, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Update dashboard stats
+        function updateDashboardStats(data) {
+            document.getElementById('totalProducts').textContent = data.totalProducts || '0';
+            document.getElementById('harmfulCount').textContent = data.harmfulCount || '0';
+            document.getElementById('avgSafety').textContent = `${data.avgSafety || '0'}%`;
+        }
+
+        // Add recent analysis
+        function addRecentAnalysis(analysis) {
+            const recentAnalyses = document.getElementById('recentAnalyses');
+            const analysisItem = document.createElement('div');
+            analysisItem.className = 'analysis-item';
+            analysisItem.innerHTML = `
+                <div class="analysis-header">
+                    <span class="timestamp">${new Date().toLocaleString()}</span>
+                    <span class="safety-score ${analysis.safetyScore > 70 ? 'safe' : 'harmful'}">
+                        ${analysis.safetyScore}%
+                    </span>
+                </div>
+                <div class="analysis-content">
+                    <p>Found ${analysis.harmfulIngredients.length} harmful ingredients</p>
+                </div>
+            `;
+            recentAnalyses.insertBefore(analysisItem, recentAnalyses.firstChild);
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            // Hide dashboard initially
+            document.getElementById('dashboard').style.display = 'none';
+        });
     </script>
 </body>
-</html>
+</html> 

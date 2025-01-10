@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
 from ingredient_scraper import IngredientAnalyzer, EWGScraper
 import threading
-import schedule
 import time
 import json
+import os
 
 ingredient_api = Blueprint('ingredient_api', __name__)
 analyzer = IngredientAnalyzer()
@@ -48,7 +48,10 @@ def merge_ewg_data():
                     }
         
         # Save updated database
-        with open('/Users/shubham/CrueltyFree/backend/toxic_chemicals_database.json', 'w') as f:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        database_path = os.path.join(current_dir, 'toxic_chemicals_database.json')
+        
+        with open(database_path, 'w') as f:
             json.dump({
                 'harmful_ingredients': analyzer.harmful_ingredients,
                 'safe_alternatives': analyzer.safe_alternatives,
