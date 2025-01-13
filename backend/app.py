@@ -5,6 +5,7 @@ import os
 from PIL import Image, ImageOps, ImageEnhance
 import pytesseract
 from ingredient_api import ingredient_api
+from ml_classifier import IngredientMLClassifier
 import tempfile
 import re
 
@@ -15,6 +16,12 @@ CORS(app, resources={r"/*": {
     "allow_headers": ["Content-Type", "Authorization"],
     "max_age": 3600
 }})
+
+# Initialize ML classifier
+ml_classifier = IngredientMLClassifier()
+if not ml_classifier.load_models():
+    print("Training new ML models...")
+    ml_classifier.train()
 
 # Serve frontend files
 @app.route('/')
@@ -227,42 +234,69 @@ def analyze_ingredients():
         safe_ingredients = []
         detailed_harmful = []
 
-        # Analyze each ingredient
+        # Analyze each ingredient using both ML and rule-based approaches
         for ingredient in ingredients:
             ingredient_lower = ingredient.lower()
             found_harmful = False
             
-            # Check against harmful ingredients database
+            # ML prediction
+            ml_result = ml_classifier.predict(ingredient_lower)
+            
+            # Rule-based check against database
+            db_match = None
             for harmful_name, info in toxic_db['harmful_ingredients'].items():
                 # Check main name
                 if ingredient_lower in harmful_name.lower():
-                    detailed_harmful.append({
-                        "name": ingredient,
-                        "score": info.get("score", 5),
-                        "concerns": info.get("concerns", []),
-                        "categories": info.get("categories", []),
-                        "alternatives": info.get("safe_alternatives", [])
-                    })
-                    harmful_ingredients.append(ingredient)
-                    found_harmful = True
+                    db_match = (harmful_name, info)
                     break
                 
                 # Check alternative names
                 for alt_name in info.get("alternative_names", []):
                     if ingredient_lower in alt_name.lower():
-                        detailed_harmful.append({
-                            "name": ingredient,
-                            "score": info.get("score", 5),
-                            "concerns": info.get("concerns", []),
-                            "categories": info.get("categories", []),
-                            "alternatives": info.get("safe_alternatives", [])
-                        })
-                        harmful_ingredients.append(ingredient)
-                        found_harmful = True
+                        db_match = (harmful_name, info)
                         break
                 
-                if found_harmful:
+                if db_match:
                     break
+            
+            # Combine ML and rule-based results
+            if ml_result and ml_result['is_harmful'] and ml_result['confidence'] > 0.7:
+                found_harmful = True
+                if db_match:
+                    # Use database info if available
+                    harmful_name, info = db_match
+                    detailed_harmful.append({
+                        "name": ingredient,
+                        "score": info.get("score", 5),
+                        "concerns": info.get("concerns", []),
+                        "categories": info.get("categories", []),
+                        "alternatives": info.get("safe_alternatives", []),
+                        "confidence": ml_result['confidence']
+                    })
+                else:
+                    # Use ML prediction only
+                    detailed_harmful.append({
+                        "name": ingredient,
+                        "score": 5,  # Default score
+                        "concerns": ["Identified as potentially harmful by ML model"],
+                        "categories": ["unclassified"],
+                        "alternatives": [],
+                        "confidence": ml_result['confidence']
+                    })
+                harmful_ingredients.append(ingredient)
+            elif db_match:
+                # Trust database match even if ML disagrees
+                found_harmful = True
+                harmful_name, info = db_match
+                detailed_harmful.append({
+                    "name": ingredient,
+                    "score": info.get("score", 5),
+                    "concerns": info.get("concerns", []),
+                    "categories": info.get("categories", []),
+                    "alternatives": info.get("safe_alternatives", []),
+                    "confidence": 1.0  # High confidence for exact matches
+                })
+                harmful_ingredients.append(ingredient)
             
             if not found_harmful:
                 safe_ingredients.append(ingredient)
@@ -272,7 +306,8 @@ def analyze_ingredients():
             'safe_ingredients': safe_ingredients,
             'harmful_ingredients': harmful_ingredients,
             'detailed_harmful': detailed_harmful,
-            'total_ingredients': len(ingredients)
+            'total_ingredients': len(ingredients),
+            'analysis_method': 'hybrid'  # Indicates we're using both ML and rule-based analysis
         })
 
     except Exception as e:
