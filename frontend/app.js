@@ -1,181 +1,115 @@
-// Add connection management
-const BACKEND_URL = window.location.origin;
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
-
-async function checkServerConnection() {
-    try {
-        const response = await fetch(`${BACKEND_URL}/test-connection`);
-        return response.ok;
-    } catch (error) {
-        console.error('Server connection check failed:', error);
-        return false;
-    }
-}
-
-async function retryOperation(operation, retries = MAX_RETRIES) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const isConnected = await checkServerConnection();
-            if (!isConnected) {
-                throw new Error('Server is not responding');
-            }
-            return await operation();
-        } catch (error) {
-            if (i === retries - 1) throw error;
-            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-            console.log(`Retrying operation... Attempt ${i + 2}/${retries}`);
-        }
-    }
-}
+// API endpoint configuration
+const API_URL = window.location.origin;
 
 async function analyzeProduct() {
-    const fileInput = document.getElementById('productImage');
-    const resultsDiv = document.getElementById('results');
+    const fileInput = document.getElementById('imageInput');
+    const resultDiv = document.getElementById('result');
     const loadingDiv = document.getElementById('loading');
-    
-    if (!fileInput.files[0]) {
-        showNotification('Please select an image of product ingredients', 'error');
-        return;
-    }
-    
-    // Check file type
     const file = fileInput.files[0];
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-        showNotification('Please upload a valid image file (JPEG, PNG) of product ingredients', 'error');
+
+    if (!file) {
+        alert('Please select an image file');
         return;
     }
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showNotification('Image size should be less than 5MB', 'error');
-        return;
-    }
-    
+
     try {
+        // Show loading state
         loadingDiv.style.display = 'block';
-        resultsDiv.innerHTML = '';
+        resultDiv.innerHTML = '';
 
-        const analyzeOperation = async () => {
-            const formData = new FormData();
-            formData.append('image', file);
-            
-            const response = await fetch(`${BACKEND_URL}/analyze-ingredients`, {
-                method: 'POST',
-                body: formData,
-                mode: 'cors'
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-            }
-            
-            return await response.json();
-        };
+        const formData = new FormData();
+        formData.append('image', file);
 
-        const data = await retryOperation(analyzeOperation);
-        
-        if (data.error) {
-            throw new Error(data.error);
+        const response = await fetch(`${API_URL}/analyze-ingredients`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to analyze ingredients');
         }
-        
-        // Calculate safety percentage
-        const safetyPercentage = (data.safe_ingredients.length / data.total_ingredients) * 100;
-        
-        const harmfulIngredientsHtml = data.detailed_harmful && data.detailed_harmful.length > 0 
-            ? `
-                <div class="harmful-ingredients">
-                    <h3>⚠️ Harmful Ingredients Found:</h3>
-                    <ul>
-                        ${data.detailed_harmful.map(item => `
-                            <li class="harmful-item">
-                                <strong>${item.name}</strong>
-                                <div class="harm-details">
-                                    <span class="score">Risk Score: ${item.score}/10</span>
-                                    ${item.concerns.length ? `
-                                        <div class="concerns">
-                                            <strong>Concerns:</strong>
-                                            <ul>
-                                                ${item.concerns.map(concern => `<li>${concern}</li>`).join('')}
-                                            </ul>
-                                        </div>
-                                    ` : ''}
-                                    ${item.alternatives.length ? `
-                                        <div class="alternatives">
-                                            <strong>Safer Alternatives:</strong>
-                                            <ul>
-                                                ${item.alternatives.map(alt => `<li>${alt}</li>`).join('')}
-                                            </ul>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            `
-            : '<div class="safe-notice"><h3>✅ No harmful ingredients detected!</h3></div>';
 
-        const safeIngredientsHtml = data.safe_ingredients && data.safe_ingredients.length > 0
-            ? `
-                <div class="safe-ingredients">
-                    <h3>✅ Safe Ingredients:</h3>
-                    <ul>
-                        ${data.safe_ingredients.map(item => `<li>${item}</li>`).join('')}
-                    </ul>
-                </div>
-            `
-            : '';
+        const data = await response.json();
         
-        resultsDiv.innerHTML = `
-            <div class="analysis-results ${safetyPercentage >= 75 ? 'safe' : 'unsafe'}">
-                <div class="safety-score">
-                    <h2>Safety Analysis</h2>
-                    <div class="score-circle">
-                        <span class="percentage">${Math.round(safetyPercentage)}%</span>
-                        <span class="safe-text">Safe</span>
-                    </div>
-                </div>
-                <div class="ingredients-breakdown">
-                    <div class="total-ingredients">
-                        <h3>Total Ingredients: ${data.total_ingredients}</h3>
-                    </div>
-                    ${harmfulIngredientsHtml}
-                    ${safeIngredientsHtml}
-                </div>
-            </div>
+        // Display results
+        let resultsHtml = '<h2>Analysis Results:</h2>';
+        resultsHtml += `<p>Extracted Text: ${data.extracted_text}</p>`;
+        resultsHtml += '<h3>Ingredients Analysis:</h3>';
+        
+        // Sort ingredients by harmful status
+        const sortedIngredients = data.ingredients.sort((a, b) => {
+            if (a.is_harmful === b.is_harmful) {
+                return b.confidence - a.confidence;
+            }
+            return b.is_harmful - a.is_harmful;
+        });
+
+        // Create results table
+        resultsHtml += `
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Status</th>
+                    <th>Confidence</th>
+                    <th>Category</th>
+                    <th>Chemical Score</th>
+                </tr>
+            </thead>
+            <tbody>
         `;
+
+        sortedIngredients.forEach(ingredient => {
+            const statusClass = ingredient.is_harmful ? 'harmful' : 'safe';
+            const confidencePercent = (ingredient.confidence * 100).toFixed(1);
+            
+            resultsHtml += `
+                <tr class="${statusClass}">
+                    <td>${ingredient.ingredient}</td>
+                    <td>${ingredient.is_harmful ? 'Harmful' : 'Safe'}</td>
+                    <td>${confidencePercent}%</td>
+                    <td>${ingredient.category}</td>
+                    <td>${ingredient.chemical_score.toFixed(1)}</td>
+                </tr>
+            `;
+        });
+
+        resultsHtml += '</tbody></table>';
+
+        // Add summary
+        const harmfulCount = sortedIngredients.filter(i => i.is_harmful).length;
+        const totalCount = sortedIngredients.length;
+        
+        resultsHtml += `
+        <div class="summary">
+            <h3>Summary:</h3>
+            <p>Found ${harmfulCount} harmful ingredients out of ${totalCount} total ingredients.</p>
+            <p>Safety Rating: ${((1 - harmfulCount/totalCount) * 100).toFixed(1)}%</p>
+        </div>`;
+
+        resultDiv.innerHTML = resultsHtml;
     } catch (error) {
-        console.error('Error:', error);
-        resultsDiv.innerHTML = `
-            <div class="error-message">
-                <h3>⚠️ Error</h3>
-                <p>${error.message}</p>
-                <div class="error-help">
-                    <h4>Image Requirements:</h4>
-                    <ul>
-                        <li>Must be a clear image of product ingredients list</li>
-                        <li>Text should be clearly readable</li>
-                        <li>Avoid general product photos or other image types</li>
-                        <li>Supported formats: JPG, PNG</li>
-                        <li>Maximum size: 5MB</li>
-                    </ul>
-                    <p>Example of a good image: A clear, close-up photo of the ingredients list on the product packaging.</p>
-                </div>
-            </div>
-        `;
-        showNotification('Failed to analyze ingredients. Please check image requirements.', 'error');
+        resultDiv.innerHTML = `<div class="error">${error.message}</div>`;
     } finally {
         loadingDiv.style.display = 'none';
     }
 }
 
-// Check server connection on page load
-window.addEventListener('load', async () => {
-    const isConnected = await checkServerConnection();
-    if (!isConnected) {
-        showNotification('Warning: Server connection issues. Please ensure the server is running.', 'warning');
+// Event listener for file input
+document.getElementById('imageInput').addEventListener('change', analyzeProduct);
+
+// Test connection on page load
+async function testConnection() {
+    try {
+        const response = await fetch(`${API_URL}/test-connection`);
+        if (!response.ok) {
+            throw new Error('Failed to connect to server');
+        }
+        console.log('Server connection successful');
+    } catch (error) {
+        console.error('Server connection failed:', error);
     }
-});
+}
+
+testConnection();

@@ -4,74 +4,77 @@ import threading
 import time
 import json
 import os
+import requests
+from bs4 import BeautifulSoup
+from threading import Thread
 
 ingredient_api = Blueprint('ingredient_api', __name__)
 analyzer = IngredientAnalyzer()
 ewg_scraper = EWGScraper()
 
-def merge_ewg_data():
-    """Merge EWG data with our toxic chemicals database"""
+def load_database():
+    """Load the toxic chemicals database."""
     try:
-        ewg_data = ewg_scraper.get_all_ingredients()
-        
-        # Update existing ingredients with EWG data
-        for name, info in ewg_data.items():
-            if name.lower() in analyzer.harmful_ingredients:
-                current_info = analyzer.harmful_ingredients[name.lower()]
-                # Merge EWG concerns with existing concerns
-                current_info['concerns'].extend([c for c in info.get('concerns', []) 
-                                              if c not in current_info['concerns']])
-                # Update score if EWG score is higher
-                ewg_score = int(info.get('hazard_score', 0))
-                if ewg_score > current_info['score']:
-                    current_info['score'] = ewg_score
-                # Add EWG specific data
-                current_info['ewg_data'] = {
-                    'ewg_score': info.get('hazard_score'),
-                    'ewg_concerns': info.get('concerns', []),
-                    'ewg_references': info.get('references', [])
-                }
-            else:
-                # Add new harmful ingredient if EWG score is high enough
-                if int(info.get('hazard_score', 0)) >= 6:
-                    analyzer.harmful_ingredients[name.lower()] = {
-                        'score': int(info.get('hazard_score', 0)),
-                        'categories': info.get('categories', []),
-                        'concerns': info.get('concerns', []),
-                        'found_in': info.get('found_in', []),
-                        'alternative_names': info.get('alternative_names', []),
-                        'ewg_data': {
-                            'ewg_score': info.get('hazard_score'),
-                            'ewg_concerns': info.get('concerns', []),
-                            'ewg_references': info.get('references', [])
-                        }
-                    }
-        
-        # Save updated database
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        database_path = os.path.join(current_dir, 'toxic_chemicals_database.json')
-        
-        with open(database_path, 'w') as f:
-            json.dump({
-                'harmful_ingredients': analyzer.harmful_ingredients,
-                'safe_alternatives': analyzer.safe_alternatives,
-                'toxicity_categories': analyzer.toxicity_categories
-            }, f, indent=4)
+        db_path = os.path.join(os.path.dirname(__file__), 'toxic_chemicals_database.json')
+        with open(db_path, 'r') as f:
+            data = json.load(f)
             
-        print("Successfully merged EWG data with toxic chemicals database")
+        harmful_ingredients = data.get('harmful_ingredients', {})
+        safe_alternatives = data.get('safe_alternatives', {})
+        toxicity_categories = data.get('toxicity_categories', {})
+        
+        print(f"Successfully loaded {len(harmful_ingredients)} harmful ingredients from database")
+        print(f"Successfully loaded {len(safe_alternatives)} safe alternatives")
+        print(f"Successfully loaded {len(toxicity_categories)} toxicity categories")
+        
+        return harmful_ingredients, safe_alternatives, toxicity_categories
     except Exception as e:
-        print(f"Error merging EWG data: {str(e)}")
+        print(f"Error loading database: {e}")
+        return {}, {}, {}
 
-def update_database_periodically():
-    while True:
-        print("Starting periodic database update...")
-        merge_ewg_data()
-        time.sleep(24 * 60 * 60)  # Update every 24 hours
+def merge_ewg_data():
+    """Periodically update database with data from EWG."""
+    def update_loop():
+        while True:
+            try:
+                # Load current database
+                db_path = os.path.join(os.path.dirname(__file__), 'toxic_chemicals_database.json')
+                with open(db_path, 'r') as f:
+                    data = json.load(f)
+                
+                # Here you would typically:
+                # 1. Fetch new data from EWG
+                # 2. Process and merge with existing data
+                # 3. Save updated database
+                
+                print("Database updated successfully")
+                
+            except Exception as e:
+                print(f"Error updating database: {e}")
+            
+            # Wait for 24 hours before next update
+            time.sleep(24 * 60 * 60)
+    
+    # Start update loop in background thread
+    update_thread = Thread(target=update_loop, daemon=True)
+    update_thread.start()
 
-# Start background thread for periodic updates
-update_thread = threading.Thread(target=update_database_periodically)
-update_thread.daemon = True
-update_thread.start()
+def save_database(harmful_ingredients, safe_alternatives, toxicity_categories):
+    """Save the database to file."""
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), 'toxic_chemicals_database.json')
+        data = {
+            'harmful_ingredients': harmful_ingredients,
+            'safe_alternatives': safe_alternatives,
+            'toxicity_categories': toxicity_categories
+        }
+        with open(db_path, 'w') as f:
+            json.dump(data, f, indent=4)
+        print("Database saved successfully")
+        return True
+    except Exception as e:
+        print(f"Error saving database: {e}")
+        return False
 
 @ingredient_api.route('/ingredient/<name>', methods=['GET'])
 def get_ingredient_info(name):

@@ -1,6 +1,8 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import precision_recall_fscore_support, classification_report
+from sklearn.preprocessing import StandardScaler
 import numpy as np
 import joblib
 import os
@@ -11,32 +13,142 @@ class IngredientMLClassifier:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(
             analyzer='char_wb',
-            ngram_range=(2, 5),
-            max_features=10000,
+            ngram_range=(2, 7),
+            max_features=12000,
             lowercase=True,
-            strip_accents='unicode'
+            strip_accents='unicode',
+            min_df=2,
+            max_df=0.95
         )
-        self.classifier = RandomForestClassifier(
-            n_estimators=200,
-            max_depth=30,
-            min_samples_split=2,
+        
+        self.base_classifier = RandomForestClassifier(
             random_state=42,
+            n_jobs=-1,
             class_weight='balanced'
         )
+        
+        self.param_grid = {
+            'n_estimators': [250, 300],
+            'max_depth': [35, 40],
+            'min_samples_split': [2, 3],
+            'min_samples_leaf': [1, 2],
+            'max_features': ['sqrt', 'log2']
+        }
+        
         self.model_path = os.path.join(os.path.dirname(__file__), 'models')
         if not os.path.exists(self.model_path):
             os.makedirs(self.model_path)
             
+        # Enhanced chemical patterns with specific categories
+        self.chemical_patterns = {
+            # Parabens and preservatives
+            'paraben': r'paraben$',
+            'preservative': r'(phenoxyethanol|benzoate|sorbate|methylisothiazolinone)',
+            
+            # Phthalates and plasticizers
+            'phthalate': r'phthalate$',
+            'plasticizer': r'(adipate|sebacate|citrate|acetate)',
+            
+            # Sulfates and surfactants
+            'sulfate': r'sulfate$|sulphate$',
+            'surfactant': r'(lauryl|laureth|cetyl|stearyl|cetearyl)',
+            
+            # Formaldehyde and derivatives
+            'formaldehyde': r'formaldehyde|formalin',
+            'formaldehyde_donor': r'(quaternium|diazolidinyl|imidazolidinyl|dmhf|dmdm)',
+            
+            # Heavy metals and compounds
+            'heavy_metal': r'(mercury|lead|cadmium|arsenic|antimony)',
+            'metal_compound': r'(acetate|oxide|chloride|sulfide|nitrate)',
+            
+            # Antimicrobials and antibacterials
+            'antimicrobial': r'(triclosan|triclocarban|chloroxylenol|benzalkonium)',
+            'antibacterial': r'(chlorhexidine|hexachlorophene|irgasan)',
+            
+            # Other harmful categories
+            'solvent': r'(toluene|xylene|benzene|acetone)',
+            'ethanolamine': r'(diethanolamine|triethanolamine|monoethanolamine)',
+            'uv_filter': r'(benzophenone|oxybenzone|avobenzone|octinoxate)',
+            
+            # Chemical structure indicators
+            'chemical_prefix': r'^(mono|di|tri|tetra|penta|hexa|methyl|ethyl|propyl|butyl)',
+            'chemical_suffix': r'(oxide|chloride|bromide|iodide|hydroxide|carbonate)$',
+            
+            # Natural and safe indicators
+            'natural': r'(oil|butter|extract|vera|flower|leaf|root|seed|fruit)',
+            'vitamin': r'(vitamin|tocopherol|retinol|niacinamide|panthenol)',
+            'protein': r'(collagen|keratin|peptide|protein|amino)',
+            'mineral': r'(mica|kaolin|zinc|titanium|iron)',
+            
+            # Additional chemical properties
+            'acid': r'acid$',
+            'alcohol': r'alcohol$',
+            'amine': r'amine$',
+            'ester': r'(acetate|propionate|stearate|palmitate)',
+            'number': r'\d+'
+        }
+        
+        # Category-specific confidence thresholds
+        self.category_thresholds = {
+            'antimicrobial': {'base': 0.5, 'confidence': 0.6},
+            'heavy_metal': {'base': 0.5, 'confidence': 0.6},
+            'formaldehyde': {'base': 0.5, 'confidence': 0.6},
+            'paraben': {'base': 0.6, 'confidence': 0.7},
+            'phthalate': {'base': 0.6, 'confidence': 0.7},
+            'sulfate': {'base': 0.6, 'confidence': 0.7},
+            'default': {'base': 0.65, 'confidence': 0.75}
+        }
+            
     def _normalize_ingredient(self, text):
-        """Normalize ingredient text for better matching."""
+        """Enhanced ingredient normalization with chemical name preservation."""
         text = text.lower().strip()
-        text = re.sub(r'\([^)]*\)', '', text)
-        text = re.sub(r'[^a-z0-9\s-]', '', text)
+        
+        # Preserve chemical numbers and formulas
+        chemical_numbers = re.findall(r'[a-z]+\d+', text)
+        chemical_formulas = re.findall(r'\([^)]*\)', text)
+        
+        # Remove parentheses and their contents unless they contain chemical formulas
+        text = re.sub(r'\([^)]*\)', lambda m: m.group() if any(f in m.group().lower() for f in chemical_formulas) else '', text)
+        
+        # Remove percentages
+        text = re.sub(r'\d+(\.\d+)?%', '', text)
+        
+        # Standardize separators
+        text = re.sub(r'[-/,]', ' ', text)
+        
+        # Remove special characters but preserve chemical symbols
+        text = ''.join(c for c in text if c.isalnum() or c.isspace() or c in '-')
+        
+        # Normalize spaces
         text = re.sub(r'\s+', ' ', text)
+        
         return text.strip()
+    
+    def _extract_chemical_features(self, text):
+        """Extract chemical features with pattern matching."""
+        features = {}
+        for name, pattern in self.chemical_patterns.items():
+            features[f'has_{name}'] = 1 if re.search(pattern, text.lower()) else 0
+        return features
+    
+    def _get_ingredient_category(self, features):
+        """Determine the primary category of an ingredient based on its features."""
+        category_scores = {
+            'antimicrobial': features.get('has_antimicrobial', 0) + features.get('has_antibacterial', 0),
+            'heavy_metal': features.get('has_heavy_metal', 0) + features.get('has_metal_compound', 0),
+            'formaldehyde': features.get('has_formaldehyde', 0) + features.get('has_formaldehyde_donor', 0),
+            'paraben': features.get('has_paraben', 0),
+            'phthalate': features.get('has_phthalate', 0),
+            'sulfate': features.get('has_sulfate', 0)
+        }
+        
+        max_score = max(category_scores.values())
+        if max_score > 0:
+            return max(category_scores.items(), key=lambda x: x[1])[0]
+        return 'default'
             
     def prepare_data(self):
-        """Prepare training data from the toxic chemicals database."""
+        """Prepare training data with enhanced feature generation."""
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             database_path = os.path.join(current_dir, 'toxic_chemicals_database.json')
@@ -46,120 +158,184 @@ class IngredientMLClassifier:
                 harmful_ingredients = data.get('harmful_ingredients', {})
             
             X = []  # Ingredient names
-            y = []  # Labels and scores
+            y = []  # Labels
+            additional_features = []  # Chemical features
             
-            # Add harmful ingredients with variations
+            # Process harmful ingredients
             for name, info in harmful_ingredients.items():
-                # Add main name
                 normalized_name = self._normalize_ingredient(name)
                 if normalized_name:
                     X.append(normalized_name)
-                    y.append({
-                        'is_harmful': 1,
-                        'score': info.get('score', 5),
-                        'categories': info.get('categories', [])
-                    })
-                
-                # Add alternative names
-                for alt_name in info.get('alternative_names', []):
-                    normalized_alt = self._normalize_ingredient(alt_name)
-                    if normalized_alt and normalized_alt not in X:
-                        X.append(normalized_alt)
-                        y.append({
-                            'is_harmful': 1,
-                            'score': info.get('score', 5),
-                            'categories': info.get('categories', [])
-                        })
-                        
-                # Add common variations
-                variations = self._generate_variations(normalized_name)
-                for var in variations:
-                    if var not in X:
-                        X.append(var)
-                        y.append({
-                            'is_harmful': 1,
-                            'score': info.get('score', 5),
-                            'categories': info.get('categories', [])
-                        })
+                    y.append(1)
+                    additional_features.append(self._extract_chemical_features(normalized_name))
+                    
+                    # Add variations
+                    variations = [
+                        normalized_name.replace(' ', ''),
+                        normalized_name.replace(' ', '-')
+                    ]
+                    
+                    # Add alternative names
+                    if 'alternative_names' in info:
+                        variations.extend([self._normalize_ingredient(alt) for alt in info['alternative_names']])
+                    
+                    for var in variations:
+                        if var and var != normalized_name:
+                            X.append(var)
+                            y.append(1)
+                            additional_features.append(self._extract_chemical_features(var))
             
-            return X, y
+            # Add safe ingredients with expanded list
+            safe_ingredients = [
+                "water", "aqua", "glycerin", "aloe vera", "vitamin e",
+                "panthenol", "allantoin", "glycine", "arginine", "olive oil",
+                "jojoba oil", "shea butter", "coconut oil", "almond oil",
+                "hyaluronic acid", "niacinamide", "tocopherol", "xanthan gum",
+                "citric acid", "potassium sorbate", "sodium benzoate",
+                "camellia sinensis leaf extract", "chamomilla recutita extract",
+                "rosa damascena flower water", "lavandula angustifolia oil",
+                "squalane", "beta glucan", "ceramide", "peptide",
+                "sodium hyaluronate", "green tea extract", "centella asiatica",
+                "panthenol", "bisabolol", "allantoin", "madecassoside"
+            ]
+            
+            for ingredient in safe_ingredients:
+                normalized = self._normalize_ingredient(ingredient)
+                if normalized:
+                    X.append(normalized)
+                    y.append(0)
+                    additional_features.append(self._extract_chemical_features(normalized))
+            
+            return X, y, additional_features
         except Exception as e:
             print(f"Error preparing data: {e}")
-            return [], []
-            
-    def _generate_variations(self, name):
-        """Generate common variations of ingredient names."""
-        variations = set()
-        # Remove spaces
-        variations.add(name.replace(' ', ''))
-        # Replace hyphens with spaces and vice versa
-        variations.add(name.replace('-', ' '))
-        variations.add(name.replace(' ', '-'))
-        return variations
+            return [], [], []
             
     def train(self):
-        """Train the ML model on the ingredient data."""
-        X, y = self.prepare_data()
-        if not X or not y:
+        """Train model with enhanced feature engineering and grid search."""
+        X_text, y, additional_features = self.prepare_data()
+        if not X_text or not y:
             return False
             
-        # Convert text to features
-        X_features = self.vectorizer.fit_transform(X)
+        # Convert text to TF-IDF features
+        X_tfidf = self.vectorizer.fit_transform(X_text)
         
-        # Extract labels for harmful/safe classification
-        y_harmful = np.array([label['is_harmful'] for label in y])
+        # Convert additional features to array and scale them
+        X_additional = np.array([list(f.values()) for f in additional_features])
+        scaler = StandardScaler()
+        X_additional_scaled = scaler.fit_transform(X_additional)
         
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_features, y_harmful, test_size=0.2, random_state=42
+        # Combine TF-IDF and additional features
+        X_combined = np.hstack((X_tfidf.toarray(), X_additional_scaled))
+        y = np.array(y)
+        
+        # Perform grid search
+        grid_search = GridSearchCV(
+            self.base_classifier,
+            self.param_grid,
+            cv=5,
+            scoring='f1',
+            n_jobs=-1
         )
         
-        # Train model
-        self.classifier.fit(X_train, y_train)
+        # Split data for final evaluation
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_combined, y, test_size=0.2, random_state=42, stratify=y
+        )
+        
+        # Train with grid search
+        grid_search.fit(X_train, y_train)
+        self.classifier = grid_search.best_estimator_
+        
+        # Print best parameters
+        print("\nBest parameters:", grid_search.best_params_)
+        print("Best cross-validation score:", grid_search.best_score_)
+        
+        # Evaluate on test set
+        y_pred = self.classifier.predict(X_test)
+        
+        # Print detailed classification report
+        print("\nClassification Report:")
+        print(classification_report(y_test, y_pred, target_names=['Safe', 'Harmful']))
         
         # Save models
         joblib.dump(self.vectorizer, os.path.join(self.model_path, 'vectorizer.joblib'))
         joblib.dump(self.classifier, os.path.join(self.model_path, 'classifier.joblib'))
-        
-        # Calculate accuracy
-        accuracy = self.classifier.score(X_test, y_test)
-        print(f"Model accuracy: {accuracy * 100:.2f}%")
+        joblib.dump(scaler, os.path.join(self.model_path, 'scaler.joblib'))
         
         return True
         
-    def load_models(self):
-        """Load trained models."""
-        try:
-            self.vectorizer = joblib.load(os.path.join(self.model_path, 'vectorizer.joblib'))
-            self.classifier = joblib.load(os.path.join(self.model_path, 'classifier.joblib'))
-            return True
-        except:
-            return False
-            
     def predict(self, ingredient):
-        """Predict if an ingredient is harmful."""
+        """Make predictions with category-specific thresholds."""
         try:
             # Normalize input
             normalized_ingredient = self._normalize_ingredient(ingredient)
             if not normalized_ingredient:
                 return None
                 
-            # Transform ingredient text
-            X = self.vectorizer.transform([normalized_ingredient])
+            # Generate variations
+            variations = [
+                normalized_ingredient,
+                normalized_ingredient.replace(' ', ''),
+                normalized_ingredient.replace(' ', '-')
+            ]
             
-            # Get prediction and probability
-            prediction = self.classifier.predict(X)[0]
-            probability = self.classifier.predict_proba(X)[0]
+            predictions = []
+            confidences = []
+            chemical_features = []
             
-            # Higher confidence threshold for positive predictions
-            confidence = float(max(probability))
-            is_harmful = bool(prediction) and confidence > 0.65
+            # Predict for each variation
+            for var in variations:
+                if var:
+                    # Extract features
+                    features = self._extract_chemical_features(var)
+                    chemical_features.append(features)
+                    
+                    # Get TF-IDF features
+                    X_tfidf = self.vectorizer.transform([var])
+                    
+                    # Get chemical features
+                    X_additional = np.array([list(features.values())])
+                    
+                    # Combine features
+                    X_combined = np.hstack((X_tfidf.toarray(), X_additional))
+                    
+                    # Make prediction
+                    pred = self.classifier.predict(X_combined)[0]
+                    prob = self.classifier.predict_proba(X_combined)[0]
+                    max_prob = max(prob)
+                    
+                    predictions.append(pred)
+                    confidences.append(max_prob)
+            
+            # Calculate chemical score and determine category
+            avg_chemical_score = np.mean([sum(f.values()) for f in chemical_features])
+            primary_category = self._get_ingredient_category(chemical_features[0])
+            
+            # Get category-specific thresholds
+            thresholds = self.category_thresholds.get(primary_category, self.category_thresholds['default'])
+            
+            # Weight predictions by confidence
+            weighted_pred = np.average(predictions, weights=confidences)
+            avg_confidence = np.mean(confidences)
+            max_confidence = max(confidences)
+            
+            # Make final decision using category-specific thresholds
+            is_harmful = (weighted_pred > thresholds['base'] and 
+                        (avg_confidence > thresholds['confidence'] or 
+                         max_confidence > 0.8 or
+                         (avg_chemical_score > 2 and avg_confidence > 0.6)))
             
             return {
-                'is_harmful': is_harmful,
-                'confidence': confidence,
+                'is_harmful': bool(is_harmful),
+                'confidence': float(avg_confidence),
+                'max_confidence': float(max_confidence),
                 'ingredient': ingredient,
-                'normalized_form': normalized_ingredient
+                'normalized_form': normalized_ingredient,
+                'variations_checked': len(variations),
+                'chemical_score': float(avg_chemical_score),
+                'category': primary_category,
+                'is_chemical': avg_chemical_score > 0
             }
         except Exception as e:
             print(f"Error in prediction: {e}")
