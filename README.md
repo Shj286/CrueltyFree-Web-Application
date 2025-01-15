@@ -9,6 +9,8 @@ A web application that analyzes cosmetic and personal care product ingredients f
 - Integration with EWG's Skin Deep database
 - Safety scoring and categorization of harmful ingredients
 - Detailed information about ingredient concerns and safer alternatives
+- Used Machine Learning techniques to improve the classification accuracy
+
 
 ## Tech Stack
 
@@ -16,6 +18,7 @@ A web application that analyzes cosmetic and personal care product ingredients f
 - Frontend: HTML/CSS/JavaScript
 - OCR: Tesseract
 - Database: JSON-based ingredient database
+- Machine Learning: Scikit-learn
 
 ## Setup
 
