@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrueltyFree Product Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <h1>CrueltyFree Product Analyzer</h1>
+            </div>
+            <p>Your personal assistant for identifying harmful ingredients in beauty products</p>
+        </header>
+
+        <main>
+            <!-- Features Section -->
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safe Analysis</span>
+                    <p>Advanced ingredient screening to identify harmful substances in your products</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-bolt"></i>
+                    <span>Instant Results</span>
+                    <p>Get detailed analysis and safety recommendations within seconds</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-brain"></i>
+                    <span>AI-Powered</span>
+                    <p>Utilizing machine learning for accurate ingredient detection and analysis</p>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-area">
+                    <input type="file" id="imageInput" accept="image/*" class="file-input">
+                    <label for="imageInput" class="file-label">
+                        <i class="fas fa-upload"></i>
+                        Upload Image Here
+                    </label>
+                    <p class="upload-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Take a clear photo of the ingredient list for best results
+                    </p>
+                </div>
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <h3>Analyzing Your Product...</h3>
+                <p>This will just take a moment</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="result"></div>
+            <div id="results"></div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>Powered by AI • Safe & Private Analysis</p>
+                    <p class="copyright">© 2024 CrueltyFree Product Analyzer</p>
+                </div>
+                <div class="social-links">
+                    <a href="https://github.com/Shj286" target="_blank" class="social-link" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/sjangra" target="_blank" class="social-link" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+            <p class="creator">Created with ❤️ by Shubham Jangra</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 

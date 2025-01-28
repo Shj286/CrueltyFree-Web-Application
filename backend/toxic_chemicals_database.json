@@ -1,0 +1,398 @@
+{
+    "harmful_ingredients": {
+        "methylparaben": {
+            "score": 8,
+            "categories": [
+                "preservatives",
+                "parabens"
+            ],
+            "concerns": [
+                "endocrine disruption",
+                "allergies"
+            ],
+            "found_in": [
+                "cosmetics",
+                "personal care products"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:15:42.530859"
+        },
+        "propylparaben": {
+            "score": 7,
+            "categories": [
+                "preservatives",
+                "parabens"
+            ],
+            "concerns": [
+                "endocrine disruption",
+                "allergies"
+            ],
+            "found_in": [
+                "cosmetics",
+                "personal care products"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:15:48.909248"
+        },
+        "butylparaben": {
+            "score": 8,
+            "categories": [
+                "preservatives",
+                "parabens"
+            ],
+            "concerns": [
+                "hormone disruption",
+                "reproductive toxicity"
+            ],
+            "found_in": [
+                "moisturizers",
+                "makeup"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:15:56.488106"
+        },
+        "triclosan": {
+            "score": 9,
+            "categories": [
+                "antimicrobials"
+            ],
+            "concerns": [
+                "hormone disruption",
+                "bacterial resistance"
+            ],
+            "found_in": [
+                "antibacterial products",
+                "toothpaste"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:00.982346"
+        },
+        "oxybenzone": {
+            "score": 8,
+            "categories": [
+                "UV filters"
+            ],
+            "concerns": [
+                "hormone disruption",
+                "skin allergies"
+            ],
+            "found_in": [
+                "sunscreen",
+                "moisturizers"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:08.023664"
+        },
+        "retinyl palmitate": {
+            "score": 7,
+            "categories": [
+                "vitamin A derivatives"
+            ],
+            "concerns": [
+                "sun sensitivity",
+                "reproductive effects"
+            ],
+            "found_in": [
+                "anti-aging products",
+                "moisturizers"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:15.186055"
+        },
+        "toluene": {
+            "score": 10,
+            "categories": [
+                "solvents"
+            ],
+            "concerns": [
+                "neurotoxicity",
+                "reproductive harm"
+            ],
+            "found_in": [
+                "nail products"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:22.382622"
+        },
+        "phthalates": {
+            "score": 9,
+            "categories": [
+                "plasticizers"
+            ],
+            "concerns": [
+                "endocrine disruption",
+                "developmental toxicity"
+            ],
+            "found_in": [
+                "fragrances",
+                "nail polish"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:26.789402"
+        },
+        "sodium lauryl sulfate": {
+            "score": 6,
+            "categories": [
+                "surfactants"
+            ],
+            "concerns": [
+                "skin irritation",
+                "organ toxicity"
+            ],
+            "found_in": [
+                "shampoo",
+                "body wash"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:34.432671"
+        },
+        "titanium dioxide": {
+            "score": 7,
+            "categories": [
+                "colorants"
+            ],
+            "concerns": [
+                "carcinogen when inhaled",
+                "organ toxicity"
+            ],
+            "found_in": [
+                "sunscreen",
+                "makeup"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:41.144854"
+        },
+        "zinc oxide": {
+            "score": 6,
+            "categories": [
+                "UV filters",
+                "nanoparticles"
+            ],
+            "concerns": [
+                "respiratory issues when inhaled",
+                "environmental toxicity"
+            ],
+            "found_in": [
+                "sunscreen",
+                "makeup",
+                "mineral products"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:47.446662"
+        },
+        "benzophenone": {
+            "score": 8,
+            "categories": [
+                "UV filters"
+            ],
+            "concerns": [
+                "hormone disruption",
+                "organ toxicity"
+            ],
+            "found_in": [
+                "sunscreen",
+                "lip balm"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:16:54.719351"
+        },
+        "phenoxyethanol": {
+            "score": 7,
+            "categories": [
+                "preservatives"
+            ],
+            "concerns": [
+                "allergic reactions",
+                "nervous system effects"
+            ],
+            "found_in": [
+                "skincare",
+                "makeup"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:17:02.722551"
+        },
+        "aluminum compounds": {
+            "score": 7,
+            "categories": [
+                "antiperspirants"
+            ],
+            "concerns": [
+                "neurotoxicity",
+                "breast cancer concerns"
+            ],
+            "found_in": [
+                "deodorants",
+                "antiperspirants"
+            ],
+            "ewg_score": null,
+            "ewg_concerns": [],
+            "ewg_found_in": [],
+            "ewg_last_updated": "2025-01-27T13:17:09.556451"
+        }
+    },
+    "safe_alternatives": {
+        "preservatives": [
+            "Leuconostoc/Radish Root Ferment Filtrate",
+            "Lactobacillus Ferment",
+            "Honeysuckle Extract",
+            "Aspen Bark Extract",
+            "Japanese Honeysuckle Extract",
+            "Radish Root Ferment Filtrate",
+            "Lactobacillus Ferment",
+            "Leuconostoc Ferment",
+            "Honeysuckle Extract",
+            "Neem Oil",
+            "Rosemary Extract",
+            "Grapefruit Seed Extract"
+        ],
+        "parabens": [
+            "Tea Tree Oil",
+            "Rosemary Extract",
+            "Neem Oil",
+            "Vitamin E (Tocopherol)"
+        ],
+        "sulfates": [
+            "Decyl Glucoside",
+            "Coco Glucoside",
+            "Sodium Cocoyl Glycinate",
+            "Cocamidopropyl Betaine",
+            "Sodium Cocoyl Glutamate"
+        ],
+        "phthalates": [
+            "Essential Oils",
+            "Natural Fragrances",
+            "Plant Extracts",
+            "Vanilla Extract",
+            "Citrus Oils"
+        ],
+        "UV filters": [
+            "Non-nano Zinc Oxide",
+            "Non-nano Titanium Dioxide",
+            "Red Raspberry Seed Oil",
+            "Carrot Seed Oil",
+            "Shea Butter (natural SPF)",
+            "Coconut Oil (natural SPF)"
+        ],
+        "antimicrobials": [
+            "Tea Tree Oil",
+            "Thyme Extract",
+            "Oregano Extract",
+            "Grapefruit Seed Extract",
+            "Colloidal Silver"
+        ],
+        "natural": [
+            "Aloe Vera",
+            "Shea Butter",
+            "Coconut Oil",
+            "Jojoba Oil",
+            "Green Tea Extract",
+            "Chamomile Extract",
+            "Calendula Extract"
+        ],
+        "general": [
+            "Aloe Vera",
+            "Vitamin E",
+            "Glycerin",
+            "Shea Butter",
+            "Jojoba Oil"
+        ],
+        "antiperspirants": [
+            "Mineral Salt Crystal",
+            "Activated Charcoal",
+            "Magnesium Hydroxide",
+            "Kaolin Clay",
+            "Witch Hazel"
+        ]
+    },
+    "toxicity_categories": {
+        "preservatives": {
+            "description": "Chemicals used to prevent product spoilage",
+            "common_concerns": [
+                "allergies",
+                "endocrine disruption"
+            ],
+            "safe_threshold": 5
+        },
+        "UV filters": {
+            "description": "Chemicals that protect against UV radiation",
+            "common_concerns": [
+                "hormone disruption",
+                "free radical generation"
+            ],
+            "safe_threshold": 6
+        },
+        "antimicrobials": {
+            "description": "Chemicals that prevent bacterial growth",
+            "common_concerns": [
+                "bacterial resistance",
+                "hormone effects"
+            ],
+            "safe_threshold": 7
+        },
+        "fragrances": {
+            "description": "Chemicals used to add scent",
+            "common_concerns": [
+                "allergies",
+                "respiratory issues"
+            ],
+            "safe_threshold": 5
+        },
+        "solvents": {
+            "description": "Chemicals used to dissolve other ingredients",
+            "common_concerns": [
+                "neurotoxicity",
+                "organ system toxicity"
+            ],
+            "safe_threshold": 8
+        },
+        "plasticizers": {
+            "description": "Chemicals that increase flexibility",
+            "common_concerns": [
+                "endocrine disruption",
+                "developmental issues"
+            ],
+            "safe_threshold": 7
+        },
+        "surfactants": {
+            "description": "Chemicals that help cleanse and create foam",
+            "common_concerns": [
+                "skin irritation",
+                "organ toxicity"
+            ]
+        },
+        "colorants": {
+            "description": "Chemicals used to add color to products",
+            "common_concerns": [
+                "allergies",
+                "carcinogenic potential"
+            ]
+        }
+    }
+}
